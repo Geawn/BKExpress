@@ -21,7 +21,7 @@ export default function App() {
     <NavigationContainer style={{ backgroundColor: 'blue' }}>
       <Stack.Navigator>
         <Stack.Screen name="Home" component={HomeScreen} options={{ header: () => <NoHeader /> }} />
-        <Stack.Screen name="Detail" component={DetailScreen} options={{ title: 'Chi Tiết Bài Báo' }} />
+        <Stack.Screen name="Detail" component={DetailScreen} options={{ header: () => <NoHeader /> }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

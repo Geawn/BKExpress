@@ -57,11 +57,12 @@ export default function HomeScreen({ navigation }) {
   };
 
   return (
-    <View style={{ padding: 10, flex: 1 }}>
+    <>
+      {/* header */}
       <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'lightblue' }}>
         <AntDesign name="bars" size={30} color="black"
-          onPress={() => { console.log('sidebar open') }} 
-          style={{padding: 10}}
+          onPress={() => { console.log('sidebar open') }}
+          style={{ padding: 10 }}
         />
         <FlatList
           horizontal
@@ -75,33 +76,33 @@ export default function HomeScreen({ navigation }) {
               <Text style={{ color: 'white' }}>{item}</Text>
             </TouchableOpacity>
           )}
-          style={{ flexGrow: 0 }}
         />
       </View>
 
-      <TextInput
-        placeholder="Tìm kiếm bài báo..."
-        value={searchQuery}
-        onChangeText={handleSearch}
-        style={{ borderWidth: 1, padding: 8, marginVertical: 10 }}
-      />
+      <View style={{ padding: 10, flex: 1 }}>
+        <TextInput
+          placeholder="Tìm kiếm bài báo..."
+          value={searchQuery}
+          onChangeText={handleSearch}
+          style={{ borderWidth: 1, padding: 8, marginVertical: 10 }}
+        />
+        {loading ? <ActivityIndicator size="large" /> : null}
 
-      {loading ? <ActivityIndicator size="large" /> : null}
-
-      <FlatList
-        data={filteredArticles}
-        keyExtractor={(item) => item.id.toString()}
-        onRefresh={handleRefresh}
-        refreshing={loading}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Detail', { id: item.id })}
-            style={{ padding: 10, borderBottomWidth: 1 }}>
-            <Text style={{ fontWeight: 'bold' }}>{item.title}</Text>
-            <Text>{item.author}</Text>
-          </TouchableOpacity>
-        )}
-      />
-    </View>
+        <FlatList
+          data={filteredArticles}
+          keyExtractor={(item) => item.id.toString()}
+          onRefresh={handleRefresh}
+          refreshing={loading}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Detail', { id: item.id })}
+              style={{ padding: 10, borderBottomWidth: 1 }}>
+              <Text style={{ fontWeight: 'bold' }}>{item.title}</Text>
+              <Text>{item.author}</Text>
+            </TouchableOpacity>
+          )}
+        />
+      </View>
+    </>
   );
 }
