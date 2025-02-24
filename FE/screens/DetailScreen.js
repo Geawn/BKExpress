@@ -20,7 +20,7 @@ export default function DetailScreen({ route }) {
       setLoading(false);
     } else {
       try {
-        const response = await axios.get(`http://localhost:3000/news/${id}`);
+        const response = await axios.get(`http://192.168.1.5:3000/news/${id}`);
         setArticle(response.data);
         await AsyncStorage.setItem(`news_${id}`, JSON.stringify(response.data));
       } catch (error) {

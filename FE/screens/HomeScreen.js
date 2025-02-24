@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
-const CATEGORIES = ['Tin nóng', 'Thể thao', 'Giáo dục', 'Công nghệ', 'Giải trí'];
+const CATEGORIES = ['Tin nóng', 'Thể thao', 'Giáo dục', 'Công nghệ', 'Giải trí', 'Xe', 'Đời sống', 'Ẩm thực'];
 
 export default function HomeScreen({ navigation }) {
   const [articles, setArticles] = useState([]);
@@ -25,7 +26,7 @@ export default function HomeScreen({ navigation }) {
       setLoading(false);
     } else {
       try {
-        const response = await axios.get('http://localhost:3000/news');
+        const response = await axios.get('http://192.168.1.5:3000/news');
         setArticles(response.data);
         setFilteredArticles(response.data);
         await AsyncStorage.setItem('news', JSON.stringify(response.data));
@@ -56,19 +57,27 @@ export default function HomeScreen({ navigation }) {
   };
 
   return (
-    <View style={{ flex: 1, padding: 10 }}>
-      <FlatList
-        horizontal
-        data={CATEGORIES}
-        keyExtractor={(item) => item}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            onPress={() => setSelectedCategory(item)}
-            style={{ padding: 10, backgroundColor: selectedCategory === item ? 'blue' : 'gray', marginRight: 5 }}>
-            <Text style={{ color: 'white' }}>{item}</Text>
-          </TouchableOpacity>
-        )}
-      />
+    <View style={{ padding: 10, flex: 1 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'lightblue' }}>
+        <AntDesign name="bars" size={30} color="black"
+          onPress={() => { console.log('sidebar open') }} 
+          style={{padding: 10}}
+        />
+        <FlatList
+          horizontal
+          data={CATEGORIES}
+          keyExtractor={(item) => item}
+          showsHorizontalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              onPress={() => setSelectedCategory(item)}
+              style={{ padding: 10, backgroundColor: selectedCategory === item ? 'blue' : 'gray', marginRight: 5, flex: 1, justifyContent: 'center', alignItems: 'center', minWidth: 50 }}>
+              <Text style={{ color: 'white' }}>{item}</Text>
+            </TouchableOpacity>
+          )}
+          style={{ flexGrow: 0 }}
+        />
+      </View>
 
       <TextInput
         placeholder="Tìm kiếm bài báo..."
