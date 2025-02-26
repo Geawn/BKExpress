@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, Image } from 'react-native';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -9,7 +9,7 @@ export default function DetailScreen({ route }) {
   // for back navigation
   const navigation = useNavigation();
 
-  const { id } = route.params;
+  const { id, source_icon } = route.params;
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -35,16 +35,18 @@ export default function DetailScreen({ route }) {
     }
   };
 
+  console.log(source_icon)
+  console.log(id)
+
   return (
     <>
       {/* header */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'lightblue' }}>
+      <View style={{ justifyContent: 'center', backgroundColor: 'lightblue' }}>
         <AntDesign name="arrowleft" size={30} color="black"
           onPress={() => { navigation.goBack(); }}
-          style={{ padding: 10 }}
+          style={{ padding: 10, position: 'absolute', left: 0, zIndex: 1 }}
         />
-        {/* logo here */}
-        
+        <Image source={{uri: source_icon}} style={{width: 200, height: 50, alignSelf: 'center'}} />
       </View>
 
       <ScrollView style={{ padding: 10 }}>
