@@ -50,7 +50,7 @@ async function addArticleToList(category, newArticleList) {
 
   newArticleList.forEach((article) => {
     if (currentArticles[article._id]) {
-      if (!currentArticles[article._id].detail) { // the article is not in full version
+      if (!currentArticles[article._id].content) { // the article is not in full version
         currentArticles[article._id] = article; // Thêm hoặc cập nhật bài viết theo ID
       }
     } else {
@@ -76,12 +76,12 @@ async function getArticleDetail(category, id) {
     });
 }
 
-async function setArticleDetail(category, newArticleDetail) {
+async function setArticleDetail(category, newArticleDetail, id) {
   return AsyncStorage.getItem(`article_${category}`)
     .then((data) => {
       if (data) {
-        targetedArticle = JSON.parse(data)[id]; // Trả về thông tin chi tiết của bài viết theo ID
-        targetedArticle = newArticleDetail
+        targetedArticle = JSON.parse(data); // Trả về thông tin chi tiết của bài viết theo ID
+        targetedArticle[id] = newArticleDetail
         return AsyncStorage.setItem(`article_${category}`, JSON.stringify(targetedArticle));
       }
       return {};
