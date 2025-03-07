@@ -2330,6 +2330,7 @@ big-integer@1.6.x:
     expo-status-bar "~2.0.1"
     react "18.3.1"
     react-native "0.76.7"
+    react-native-cache "^2.0.3"
     react-native-gesture-handler "^2.23.1"
     react-native-reanimated "^3.16.7"
     react-native-safe-area-context "^5.2.0"
