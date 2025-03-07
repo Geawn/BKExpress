@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, Image } from 'react-native';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useNavigation } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
+import { getArticleDetail, setArticleDetail } from '../cache/article.js'
+import { getArticleDetailAPI } from '../api/article.js'
 
 export default function DetailScreen({ route }) {
   // for back navigation
   const navigation = useNavigation();
 
-  const { id, source_icon } = route.params;
+  const { id, source_icon, category } = route.params;
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -19,20 +19,25 @@ export default function DetailScreen({ route }) {
 
   const loadArticle = async () => {
     setLoading(true);
-    const cache = await AsyncStorage.getItem(`news_${id}`);
+    // const cache = await AsyncStorage.getItem(`news_${id}`);
+    // if (cache) {
+    //   setArticle(JSON.parse(cache));
+    // } else {
+    //   try {
+    //     const response = await axios.get(`http://192.168.1.5:3000/news/${id}`);
+    //     setArticle(response.data);
+    //     await AsyncStorage.setItem(`news_${id}`, JSON.stringify(response.data));
+    //   } catch (error) {
+    //     console.error(error);
+    //   }
+    // }
+    const cache = await getArticleDetail(category, id)
     if (cache) {
-      setArticle(JSON.parse(cache));
-      setLoading(false);
+      setArticle(cache)
     } else {
-      try {
-        const response = await axios.get(`http://192.168.1.5:3000/news/${id}`);
-        setArticle(response.data);
-        await AsyncStorage.setItem(`news_${id}`, JSON.stringify(response.data));
-      } catch (error) {
-        console.error(error);
-      }
-      setLoading(false);
+      
     }
+    setLoading(false);
   };
 
   console.log(source_icon)
