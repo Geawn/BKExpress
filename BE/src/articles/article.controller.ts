@@ -6,7 +6,13 @@ import {
   Post,
   Body,
 } from "@nestjs/common";
-import { ApiTags, ApiOperation, ApiQuery, ApiResponse } from "@nestjs/swagger";
+import {
+  ApiTags,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiBody,
+} from "@nestjs/swagger";
 import { ArticlesService } from "./article.service";
 import { Article } from "../schemas/article.schema";
 import { Types } from "mongoose";
@@ -116,15 +122,31 @@ export class ArticlesController {
     return article;
   }
 
-
   @Post()
+  @ApiOperation({
+    summary: "Create new articles",
+    description: "Creates one or more articles in the database",
+  })
+  @ApiBody({
+    type: [CreateArticleDto], // Mảng DTO vì nhận nhiều article
+    description: "Array of articles to create",
+  })
+  @ApiResponse({
+    status: 201,
+    description: "The articles have been successfully created",
+    type: [Article], // Mảng Article làm response
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Bad Request - Invalid data or category not found",
+  })
   async createArticle(
     @Body() createArticleDtos: CreateArticleDto[],
   ): Promise<Article[]> {
     return await this.articlesService.createArticles(createArticleDtos);
   }
 
-  @Get('search')
+  @Get("search")
   @ApiOperation({
     summary: "Get article details",
     description: "Retrieves details of a specific article by ID.",
@@ -141,8 +163,7 @@ export class ArticlesController {
     description: "Successfully retrieved article details.",
     type: [Article],
   })
-  async search(@Query('search') query: string) {
+  async search(@Query("search") query: string) {
     return this.articlesService.search(query);
   }
-
 }
