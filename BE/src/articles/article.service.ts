@@ -67,4 +67,35 @@ export class ArticlesService {
       .populate("category", "name") // Lấy thông tin đầy đủ của category
       .exec();
   }
+
+  async search(query: string) {
+    return this.articleModel.aggregate([
+      {
+        $search: {
+          index: 'default',
+          compound: {
+            should: [
+              {
+                text: {
+                  query: query,
+                  path: 'title',
+                  fuzzy: { maxEdits: 2 },
+                  score: { boost: { value: 5 } }
+                }
+              },
+              {
+                text: {
+                  query: query,
+                  path: 'content',
+                  score: { boost: { value: 2 } }
+                }
+              }
+            ]
+          }
+        }
+      },
+      { $limit: 10 }
+    ]);
+  }
+  
 }
