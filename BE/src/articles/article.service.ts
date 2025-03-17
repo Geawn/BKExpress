@@ -69,7 +69,6 @@ export class ArticlesService {
       .exec();
   }
 
-  private mutex = new Mutex();
   async createArticles(
     createArticleDtos: CreateArticleDto[],
   ): Promise<Article[]> {
@@ -86,4 +85,35 @@ export class ArticlesService {
 
     return this.articleModel.insertMany(articles);
   }
+
+  async search(query: string) {
+    return this.articleModel.aggregate([
+      {
+        $search: {
+          index: 'default',
+          compound: {
+            should: [
+              {
+                text: {
+                  query: query,
+                  path: 'title',
+                  fuzzy: { maxEdits: 2 },
+                  score: { boost: { value: 5 } }
+                }
+              },
+              {
+                text: {
+                  query: query,
+                  path: 'content',
+                  score: { boost: { value: 2 } }
+                }
+              }
+            ]
+          }
+        }
+      },
+      { $limit: 10 }
+    ]);
+  }
+  
 }

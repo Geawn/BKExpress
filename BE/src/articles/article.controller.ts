@@ -116,10 +116,33 @@ export class ArticlesController {
     return article;
   }
 
+
   @Post()
   async createArticle(
     @Body() createArticleDtos: CreateArticleDto[],
   ): Promise<Article[]> {
     return await this.articlesService.createArticles(createArticleDtos);
   }
+
+  @Get('search')
+  @ApiOperation({
+    summary: "Get article details",
+    description: "Retrieves details of a specific article by ID.",
+  })
+  @ApiQuery({
+    name: "search",
+    type: String,
+    required: true,
+    example: "đơn",
+    description: "The content or title",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Successfully retrieved article details.",
+    type: [Article],
+  })
+  async search(@Query('search') query: string) {
+    return this.articlesService.search(query);
+  }
+
 }
