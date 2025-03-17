@@ -1,10 +1,11 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, BadRequestException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { Article } from "../schemas/article.schema";
 import { Category } from "../schemas/category.schema";
 import { Types } from "mongoose";
-
+import { CreateArticleDto } from "./dto/create-article.dto";
+import { Mutex } from "async-mutex";
 interface ArticleQuery {
   category?: Types.ObjectId;
   pubDate?: { $lt?: Date; $gt?: Date };
@@ -32,7 +33,7 @@ export class ArticlesService {
     limit: number,
     lastPubDate?: string,
     direction: "newer" | "older" = "older",
-  ): Promise<any> {
+  ): Promise<Article[]> {
     const sortOrder = direction === "older" ? -1 : 1;
     const query: ArticleQuery = {};
 
@@ -66,6 +67,23 @@ export class ArticlesService {
       .findById(new Types.ObjectId(id))
       .populate("category", "name") // Lấy thông tin đầy đủ của category
       .exec();
+  }
+
+  async createArticles(
+    createArticleDtos: CreateArticleDto[],
+  ): Promise<Article[]> {
+    const articles: Article[] = [];
+
+    for (const dto of createArticleDtos) {
+      const category = await this.categoryModel.findOne({ name: dto.category });
+      if (!category) {
+        throw new BadRequestException(`Category '${dto.category}' not found`);
+      }
+      const articleData = { ...dto, category: category._id };
+      articles.push(new this.articleModel(articleData));
+    }
+
+    return this.articleModel.insertMany(articles);
   }
 
   async search(query: string) {

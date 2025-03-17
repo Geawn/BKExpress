@@ -27,6 +27,7 @@
     "@nestjs/mongoose": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/swagger": "^11.0.3",
+    "async-mutex": "^0.5.0",
     "cache-manager": "^6.4.0",
     "cache-manager-redis-store": "^3.0.1",
     "mongodb": "^6.13.1",

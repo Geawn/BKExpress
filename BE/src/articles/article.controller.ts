@@ -1,8 +1,16 @@
-import { Controller, Get, Query, NotFoundException } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Query,
+  NotFoundException,
+  Post,
+  Body,
+} from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiQuery, ApiResponse } from "@nestjs/swagger";
 import { ArticlesService } from "./article.service";
 import { Article } from "../schemas/article.schema";
 import { Types } from "mongoose";
+import { CreateArticleDto } from "./dto/create-article.dto";
 
 @ApiTags("articles") // Grouping API endpoints in Swagger
 @Controller("articles")
@@ -108,6 +116,13 @@ export class ArticlesController {
     return article;
   }
 
+
+  @Post()
+  async createArticle(
+    @Body() createArticleDtos: CreateArticleDto[],
+  ): Promise<Article[]> {
+    return await this.articlesService.createArticles(createArticleDtos);
+  }
 
   @Get('search')
   @ApiOperation({

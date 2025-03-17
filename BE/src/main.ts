@@ -1,9 +1,14 @@
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import * as bodyParser from "body-parser";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Tăng giới hạn payload lên 1MB (hoặc cao hơn nếu cần)
+  app.use(bodyParser.json({ limit: "1mb" }));
+  app.use(bodyParser.urlencoded({ limit: "1mb", extended: true }));
 
   // Cấu hình Swagger
   const config = new DocumentBuilder()
