@@ -6,6 +6,7 @@ import { Category } from "../schemas/category.schema";
 import { Types } from "mongoose";
 import { CreateArticleDto } from "./dto/create-article.dto";
 import { Mutex } from "async-mutex";
+import path from "path";
 interface ArticleQuery {
   category?: Types.ObjectId;
   pubDate?: { $lt?: Date; $gt?: Date };
@@ -86,13 +87,20 @@ export class ArticlesService {
     return this.articleModel.insertMany(articles);
   }
 
-  async search(query: string) {
+  async search(query: string): Promise<Article[]> {
     return this.articleModel.aggregate([
       {
         $search: {
           index: 'default',
           compound: {
             should: [
+              {
+                phrase: {
+                  path: ['title', 'content.value'],
+                  query: query,
+                  score: { boost: { value: 100 } }
+                }
+              },
               {
                 text: {
                   query: query,
@@ -104,7 +112,7 @@ export class ArticlesService {
               {
                 text: {
                   query: query,
-                  path: 'content',
+                  path: 'content.value',
                   score: { boost: { value: 2 } }
                 }
               }
@@ -112,8 +120,19 @@ export class ArticlesService {
           }
         }
       },
-      { $limit: 10 }
-    ]);
+      { $limit: 10 },
+      {
+        $project: {
+          title: 1,
+          description: 1,
+          pubDate: 1,
+          source_icon: 1,
+          image_url: 1,
+          _id: 1
+        }
+      }
+    ]).exec();
   }
+  
   
 }
