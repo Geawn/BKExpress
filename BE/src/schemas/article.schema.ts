@@ -7,14 +7,12 @@ import { ApiProperty } from "@nestjs/swagger";
 
 export type ArticleDocument = Article & Document;
 
-@Schema({ timestamps: true })
+@Schema({ collection: "Article", timestamps: true })
 export class Article {
-
   @ApiProperty({
     description: "Unique identifier of the article",
     example: "67d0b447c5c0cb20d3fc6a14",
   })
-
   _id: string;
 
   @ApiProperty({ description: "Title of the article" })
@@ -49,14 +47,12 @@ export class Article {
     type: [Object],
     required: false,
   })
-
-  @Prop([{ type: { type: String, enum: ["text", "image"] }, value: String }])
+  @Prop([{ type: { type: String, enum: ["text", "image", "quote", "video", "list"] }, value: String }])
   content?: { type: string; value: string }[];
-
 
   @ApiProperty({ description: "Publication date of the article" })
   @Prop()
-  pubDate: string;
+  pubDate: Date;
 
   @ApiProperty({ description: "Timezone of the publication date" })
   @Prop()
@@ -106,8 +102,8 @@ export class Article {
     description: "Last update timestamp",
     example: "2025-03-16T14:00:00.000Z",
   })
-
   updatedAt: Date;
 }
 
 export const ArticleSchema = SchemaFactory.createForClass(Article);
+
