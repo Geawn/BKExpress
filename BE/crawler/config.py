@@ -34,6 +34,13 @@ CATEGORY_MAPPING = {
     "phap-luat": "Politics",  # Có thể là "Law" nếu muốn thêm
     # Thêm các ánh xạ khác nếu cần
 }
+
+ICON_MAPPING = {
+    "tuoitre": 0,
+    "vnexpress": 1,
+    # Thêm các icon khác nếu cần
+}
+
 # config.py
 API_ENDPOINT = "http://localhost:3000/articles"  # Điều chỉnh port nếu NestJS dùng port khác (thường là 3000)
 REFRESH_INTERVAL = 15 * 60  # 15 phút (tính bằng giây)
