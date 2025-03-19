@@ -1,13 +1,20 @@
 // articles/schemas/article.schema.ts
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+
 import { Document, Types, Schema as MongooseSchema } from "mongoose";
+
 import { ApiProperty } from "@nestjs/swagger";
 
 export type ArticleDocument = Article & Document;
 
 @Schema({ timestamps: true })
 export class Article {
-  @ApiProperty({ description: "Unique identifier of the article" })
+
+  @ApiProperty({
+    description: "Unique identifier of the article",
+    example: "67d0b447c5c0cb20d3fc6a14",
+  })
+
   _id: string;
 
   @ApiProperty({ description: "Title of the article" })
@@ -29,7 +36,7 @@ export class Article {
   @ApiProperty({ description: "URL of the video (if any)", required: false })
   @Prop()
   video_url?: string;
- 
+
   @ApiProperty({
     description: "Short description of the article",
     required: false,
@@ -42,13 +49,10 @@ export class Article {
     type: [Object],
     required: false,
   })
-  @Prop([
-    {
-      type: { type: String, enum: ["text", "image", "video", "quote", "list"] },
-      value: { type: MongooseSchema.Types.Mixed }, // Hỗ trợ cả chuỗi và mảng
-    },
-  ])
-  content?: { type: string; value: string | string[] }[];
+
+  @Prop([{ type: { type: String, enum: ["text", "image"] }, value: String }])
+  content?: { type: string; value: string }[];
+
 
   @ApiProperty({ description: "Publication date of the article" })
   @Prop()
@@ -85,14 +89,24 @@ export class Article {
   @Prop({ default: "vietnamese" })
   language: string;
 
-  @ApiProperty({ description: "Category ID of the article" })
+  @ApiProperty({
+    description: "Category ID of the article",
+    example: "67bc33f9c9c0f77ccf87aeae",
+  })
   @Prop({ type: Types.ObjectId, ref: "Category", required: true })
   category: Types.ObjectId;
 
-  @ApiProperty({ description: "Creation timestamp" })
+  @ApiProperty({
+    description: "Creation timestamp",
+    example: "2025-03-16T14:00:00.000Z",
+  })
   createdAt: Date;
 
-  @ApiProperty({ description: "Last update timestamp" })
+  @ApiProperty({
+    description: "Last update timestamp",
+    example: "2025-03-16T14:00:00.000Z",
+  })
+
   updatedAt: Date;
 }
 

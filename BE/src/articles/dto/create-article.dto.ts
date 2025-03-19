@@ -38,7 +38,9 @@ export class CreateArticleDto {
     description: "Content of the article",
     type: [ContentItem],
   })
-  content?: { type: string; value: string | string[] }[];
+
+
+  content?: { type: string; value: string }[];
 
   @ApiProperty({ description: "Publication date of the article" })
   pubDate: string;
@@ -67,6 +69,9 @@ export class CreateArticleDto {
   })
   language?: string;
 
-  @ApiProperty({ description: "Category name of the article" })
+  @ApiProperty({
+    description: "Category name of the article (e.g., News, Economy)",
+  })
+
   category: string;
 }
