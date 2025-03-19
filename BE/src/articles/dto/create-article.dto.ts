@@ -3,13 +3,16 @@ import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export class ContentItem {
   @ApiProperty({
-    enum: ["text", "image"],
-    description: "Type of content (text or image)",
+    enum: ["text", "image", "video", "quote", "list"],
+    description: "Type of content",
   })
   type: string;
 
-  @ApiProperty({ description: "Value of the content (text or image URL)" })
-  value: string;
+  @ApiProperty({
+    description:
+      "Value of the content (string for text/image/video/quote, array for list)",
+  })
+  value: string | string[];
 }
 
 export class CreateArticleDto {
@@ -35,6 +38,8 @@ export class CreateArticleDto {
     description: "Content of the article",
     type: [ContentItem],
   })
+
+
   content?: { type: string; value: string }[];
 
   @ApiProperty({ description: "Publication date of the article" })
@@ -67,5 +72,6 @@ export class CreateArticleDto {
   @ApiProperty({
     description: "Category name of the article (e.g., News, Economy)",
   })
+
   category: string;
 }

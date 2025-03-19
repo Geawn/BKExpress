@@ -17,7 +17,7 @@ class BaseCrawler(ABC):
         self.source_id = source_id
         self.source_url = source_url
         self.timezone = pytz.timezone("Asia/Ho_Chi_Minh")
-        self.last_published_time = datetime.now(self.timezone) - timedelta(days=1)
+        self.last_published_time = datetime.now(self.timezone) - timedelta(days=1) 
 
     def fetch_rss(self):
         feed = feedparser.parse(self.rss_url)
@@ -29,7 +29,7 @@ class BaseCrawler(ABC):
 
     def crawl(self):
         articles = self.fetch_rss()
-        articles = articles[:2]  # Chỉ lấy 5 bài báo mới nhất
+        articles = articles[:5]  # Chỉ lấy 5 bài mới nhất
         new_articles = []
 
         for article in articles:
@@ -38,8 +38,8 @@ class BaseCrawler(ABC):
                 parsed_article = self.parse_article(article)
                 if parsed_article:
                     new_articles.append(parsed_article)
-                    if published_time > self.last_published_time:
-                        self.last_published_time = published_time
+        if new_articles:
+            self.last_published_time = dateutil.parser.parse(new_articles[0]["pubDate"])
 
         return new_articles
 
@@ -49,17 +49,43 @@ class TuoiTreCrawler(BaseCrawler):
             response = requests.get(article.link)
             soup = BeautifulSoup(response.content, "html.parser")
             title = article.title
+            
+            # Xử lý image_url và description từ RSS
             image_url = article.get("media_content", [{}])[0].get("url", "")
+            summary = article.get("summary", None)
+            description = None
+            if summary:
+                soup_summary = BeautifulSoup(summary, "html.parser")
+                img_tag = soup_summary.find("img")
+                if img_tag and not image_url:
+                    image_url = img_tag.get("src", "")
+                description = soup_summary.get_text().strip()
+
             content_div = soup.select_one(".detail-content")
             content = None
             if content_div:
                 content = []
-                for elem in content_div.find_all(["p", "img"], recursive=False):
-                    if elem.name == "p":
+                # Tìm tất cả thẻ trong content_div
+                for elem in content_div.find_all(
+                    ["p", "h1", "h2", "h3", "blockquote", "img", "video", "ul", "ol"]
+                ):
+                    if elem.name in ["p", "h1", "h2", "h3"]:
                         content.append({"type": "text", "value": elem.get_text().strip()})
+                    elif elem.name == "blockquote":
+                        content.append({"type": "quote", "value": elem.get_text().strip()})
                     elif elem.name == "img":
-                        content.append({"type": "image", "value": elem["src"]})
-            description = article.get("summary", None)
+                        content.append({
+                            "type": "image",
+                            "value": elem.get("src", ""),
+                            "original": elem.get("data-original", ""),
+                            "caption": elem.get("alt", "")
+                        })
+                    elif elem.name == "video":
+                        content.append({"type": "video", "value": elem.get("src", "")})
+                    elif elem.name in ["ul", "ol"]:
+                        items = [li.get_text().strip() for li in elem.find_all("li")]
+                        content.append({"type": "list", "value": items})
+
             return {
                 "title": title,
                 "link": article.link,
@@ -87,17 +113,43 @@ class VnExpressCrawler(BaseCrawler):
             response = requests.get(article.link)
             soup = BeautifulSoup(response.content, "html.parser")
             title = article.title
+            
+            # Xử lý image_url và description từ RSS
             image_url = soup.select_one(".thumb-art img")["src"] if soup.select_one(".thumb-art img") else ""
+            summary = article.get("summary", None)
+            description = None
+            if summary:
+                soup_summary = BeautifulSoup(summary, "html.parser")
+                img_tag = soup_summary.find("img")
+                if img_tag and not image_url:
+                    image_url = img_tag.get("src", "")
+                description = soup_summary.get_text().strip()
+
             content_div = soup.select_one(".fck_detail")
             content = None
             if content_div:
                 content = []
-                for elem in content_div.find_all(["p", "img"], recursive=False):
-                    if elem.name == "p":
+                # Tìm tất cả thẻ trong content_div
+                for elem in content_div.find_all(
+                    ["p", "h1", "h2", "h3", "blockquote", "img", "video", "ul", "ol"]
+                ):
+                    if elem.name in ["p", "h1", "h2", "h3"]:
                         content.append({"type": "text", "value": elem.get_text().strip()})
+                    elif elem.name == "blockquote":
+                        content.append({"type": "quote", "value": elem.get_text().strip()})
                     elif elem.name == "img":
-                        content.append({"type": "image", "value": elem["src"]})
-            description = article.get("summary", None)
+                        content.append({
+                            "type": "image",
+                            "value": elem.get("src", ""),
+                            "original": elem.get("data-original", ""),
+                            "caption": elem.get("alt", "")
+                        })
+                    elif elem.name == "video":
+                        content.append({"type": "video", "value": elem.get("src", "")})
+                    elif elem.name in ["ul", "ol"]:
+                        items = [li.get_text().strip() for li in elem.find_all("li")]
+                        content.append({"type": "list", "value": items})
+
             return {
                 "title": title,
                 "link": article.link,
