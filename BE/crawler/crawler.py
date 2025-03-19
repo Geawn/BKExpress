@@ -17,7 +17,7 @@ class BaseCrawler(ABC):
         self.source_id = source_id
         self.source_url = source_url
         self.timezone = pytz.timezone("Asia/Ho_Chi_Minh")
-        self.last_published_time = datetime.now(self.timezone) - timedelta(minutes=15) 
+        self.last_published_time = datetime.now(self.timezone) - timedelta(days=1) 
 
     def fetch_rss(self):
         feed = feedparser.parse(self.rss_url)
@@ -29,6 +29,7 @@ class BaseCrawler(ABC):
 
     def crawl(self):
         articles = self.fetch_rss()
+        articles = articles[:5]  # Chỉ lấy 5 bài mới nhất
         new_articles = []
 
         for article in articles:
@@ -56,17 +57,17 @@ class TuoiTreCrawler(BaseCrawler):
             if summary:
                 soup_summary = BeautifulSoup(summary, "html.parser")
                 img_tag = soup_summary.find("img")
-                if img_tag and not image_url:  # Nếu có img trong summary và chưa có image_url
+                if img_tag and not image_url:
                     image_url = img_tag.get("src", "")
-                description = soup_summary.get_text().strip()  # Lấy văn bản sạch
+                description = soup_summary.get_text().strip()
 
             content_div = soup.select_one(".detail-content")
             content = None
             if content_div:
                 content = []
+                # Tìm tất cả thẻ trong content_div
                 for elem in content_div.find_all(
-                    ["p", "h1", "h2", "h3", "blockquote", "img", "video", "ul", "ol"],
-                    recursive=False
+                    ["p", "h1", "h2", "h3", "blockquote", "img", "video", "ul", "ol"]
                 ):
                     if elem.name in ["p", "h1", "h2", "h3"]:
                         content.append({"type": "text", "value": elem.get_text().strip()})
@@ -120,17 +121,17 @@ class VnExpressCrawler(BaseCrawler):
             if summary:
                 soup_summary = BeautifulSoup(summary, "html.parser")
                 img_tag = soup_summary.find("img")
-                if img_tag and not image_url:  # Nếu có img trong summary và chưa có image_url
+                if img_tag and not image_url:
                     image_url = img_tag.get("src", "")
-                description = soup_summary.get_text().strip()  # Lấy văn bản sạch
+                description = soup_summary.get_text().strip()
 
             content_div = soup.select_one(".fck_detail")
             content = None
             if content_div:
                 content = []
+                # Tìm tất cả thẻ trong content_div
                 for elem in content_div.find_all(
-                    ["p", "h1", "h2", "h3", "blockquote", "img", "video", "ul", "ol"],
-                    recursive=False
+                    ["p", "h1", "h2", "h3", "blockquote", "img", "video", "ul", "ol"]
                 ):
                     if elem.name in ["p", "h1", "h2", "h3"]:
                         content.append({"type": "text", "value": elem.get_text().strip()})
