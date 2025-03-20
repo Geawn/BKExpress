@@ -120,7 +120,7 @@ export class ArticlesService {
           }
         }
       },
-      { $limit: 10 },
+      { $limit: 20 },
       {
         $project: {
           title: 1,
