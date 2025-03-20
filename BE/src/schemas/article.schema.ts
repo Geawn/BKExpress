@@ -1,11 +1,13 @@
 // articles/schemas/article.schema.ts
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document, Types } from "mongoose";
+
+import { Document, Types, Schema as MongooseSchema } from "mongoose";
+
 import { ApiProperty } from "@nestjs/swagger";
 
 export type ArticleDocument = Article & Document;
 
-@Schema({ timestamps: true })
+@Schema({ collection: "Article", timestamps: true })
 export class Article {
   @ApiProperty({
     description: "Unique identifier of the article",
@@ -45,12 +47,12 @@ export class Article {
     type: [Object],
     required: false,
   })
-  @Prop([{ type: { type: String, enum: ["text", "image"] }, value: String }])
+  @Prop([{ type: { type: String, enum: ["text", "image", "quote", "video", "list"] }, value: String }])
   content?: { type: string; value: string }[];
 
   @ApiProperty({ description: "Publication date of the article" })
   @Prop()
-  pubDate: string;
+  pubDate: Date;
 
   @ApiProperty({ description: "Timezone of the publication date" })
   @Prop()
@@ -104,3 +106,4 @@ export class Article {
 }
 
 export const ArticleSchema = SchemaFactory.createForClass(Article);
+
