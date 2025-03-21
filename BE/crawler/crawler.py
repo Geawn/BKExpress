@@ -64,13 +64,16 @@ class TuoiTreCrawler(BaseCrawler):
             # Xử lý thời gian
             published_time = dateutil.parser.parse(article.published)
             
-            # Ensure timezone is correctly handled
+            # Đảm bảo timezone được xử lý đúng
             if published_time.tzinfo is None:
-                published_time = self.timezone.localize(published_time)
-
-            # Convert to UTC
-            pub_date_utc = published_time.astimezone(pytz.UTC)
+                published_time = pytz.timezone('Asia/Ho_Chi_Minh').localize(published_time)
+            
+            # Chuyển đổi sang UTC
+            pub_date_utc = published_time - timedelta(hours=7)
             pub_date_iso = pub_date_utc.isoformat()
+
+            print(f"Original published time: {article.published}")
+            print(f"Converted published time (UTC): {pub_date_iso}")
 
             content_div = soup.select_one(".detail-content")
             content = None
@@ -143,13 +146,16 @@ class VnExpressCrawler(BaseCrawler):
             if published_time > current_time:
                 published_time = current_time
             
-            # Ensure timezone is correctly handled
+            # Đảm bảo timezone được xử lý đúng
             if published_time.tzinfo is None:
-                published_time = self.timezone.localize(published_time)
-
-            # Convert to UTC
-            pub_date_utc = published_time.astimezone(pytz.UTC)
+                published_time = pytz.timezone('Asia/Ho_Chi_Minh').localize(published_time)
+            
+            # Chuyển đổi sang UTC
+            pub_date_utc = published_time - timedelta(hours=7)
             pub_date_iso = pub_date_utc.isoformat()
+
+            print(f"Original published time: {article.published}")
+            print(f"Converted published time (UTC): {pub_date_iso}")
 
             content_div = soup.select_one(".fck_detail")
             content = None

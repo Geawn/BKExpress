@@ -86,9 +86,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.geawn.BKExpress'
+    namespace 'com.geawn.BKExpressfrontend'
     defaultConfig {
-        applicationId 'com.geawn.BKExpress'
+        applicationId 'com.geawn.BKExpressfrontend'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

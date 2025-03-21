@@ -2,7 +2,6 @@ import { MongoClient } from 'mongodb';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-
 const MONGODB_URI = process.env.DATABASE_URL || 'mongodb+srv://nhathuy2903:XKpqK9PlaV7BImPz@cluster0.vreiy66.mongodb.net/Newspaper_App';
 
 async function deleteFutureArticles() {
@@ -34,4 +33,4 @@ async function deleteFutureArticles() {
 }
 
 // Run the function
-deleteFutureArticles(); 
+deleteFutureArticles();
