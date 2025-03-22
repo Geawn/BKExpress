@@ -5,32 +5,38 @@ import axios from 'axios';
 import { getArticleListSearchAPI } from '../api/article.js';
 import { getArticlesList, addArticleToList } from '../cache/article.js'
 import {formatTimeDifferenceWithCustomTZToGMT7} from '../helper/time.js'
+import ErrorPopup from '../components/ErrorPopup';
 
 function pubDateAndTimeDiff(pubDate) {
   const [_, timediff] = formatTimeDifferenceWithCustomTZToGMT7(pubDate)
   return timediff
 }
 
-function getSourceIcon(imageUrl) {
-  if (!imageUrl) return null;
-  
-  // Check if URL contains 'tuoitre'
-  const isTuoiTre = imageUrl.toLowerCase().includes('tuoitre');
-  
-  // Map source to icon file
+function getSourceIcon(source_icon) {
   const sourceIcons = {
-    'vnexpress': require('../icon/vnexpress.jpg'),
-    'tuoitre': require('../icon/tuoitre.jpg'),
+    '0': require('../icon/tuoitre.jpg'),
+    '1': require('../icon/vnexpress.jpg'),
   };
   
-  return isTuoiTre ? sourceIcons.tuoitre : sourceIcons.vnexpress;
+  return sourceIcons[source_icon] || sourceIcons['1']; // Default to vnexpress if unknown
+}
+
+function getDefaultImage(source_icon) {
+  const defaultImages = {
+    '0': require('../iconnothumb/vnexpressnothumb.jpg'),
+    '1': require('../iconnothumb/vnexpressnothumb.jpg'),
+  };
+  
+  return defaultImages[source_icon] || defaultImages['1']; // Default to vnexpress if unknown
 }
 
 export default function SearchScreen({ navigation }) {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [inputText, setInputText] = useState('');
   const [error, setError] = useState(null);
+  const [showError, setShowError] = useState(false);
 
   const articleItem = ({ item }) => {
     return (
@@ -38,14 +44,14 @@ export default function SearchScreen({ navigation }) {
         onPress={() => navigation.navigate('Detail', { _id: item._id, category: 'search', source_icon: item.source_icon })}
         style={styles.articleItem}>
         <Image 
-          source={item.image_url ? { uri: item.image_url } : null}
+          source={item.image_url ? { uri: item.image_url } : getDefaultImage(item.source_icon)}
           style={[styles.articleImage, !item.image_url && styles.noImage]}
         />
         <View style={styles.articleContent}>
           <Text style={styles.articleTitle} numberOfLines={3}>{item.title}</Text>
           <View style={styles.articleFooter}>
             <Image 
-              source={getSourceIcon(item.image_url)} 
+              source={getSourceIcon(item.source_icon)} 
               style={styles.sourceIcon}
               resizeMode="contain"
             />
@@ -56,26 +62,32 @@ export default function SearchScreen({ navigation }) {
     )
   }
 
-  const handleSearch = async (text) => {
-    console.log('Starting search with query:', text);
-    setSearchQuery(text);
-    if (text.length > 0) {
+  const handleInputChange = (text) => {
+    setInputText(text);
+  };
+
+  const handleSearch = async () => {
+    if (inputText.length > 0) {
+      setSearchQuery(inputText);
       setLoading(true);
       try {
-        console.log('Making API call for search query:', text);
-        const response = await getArticleListSearchAPI(text);
-        console.log('Received search results:', response.data.length, 'articles');
+        const response = await getArticleListSearchAPI(inputText);
         setArticles(response.data);
         setError(null);
+        setShowError(false);
       } catch (error) {
         console.error('Search error:', error);
-        setError('Lỗi mạng. Vui lòng kiểm tra lại kết nối và thử lại.');
+        setError('network_error');
+        setShowError(true);
       }
       setLoading(false);
-    } else {
-      console.log('Clearing search results');
-      setArticles([]);
     }
+  };
+
+  const clearSearch = () => {
+    setInputText('');
+    setSearchQuery('');
+    setArticles([]);
   };
 
   const handleRefresh = async () => {
@@ -87,7 +99,7 @@ export default function SearchScreen({ navigation }) {
         setError(null);
       } catch (error) {
         console.error(error);
-        setError('Lỗi mạng. Vui lòng kiểm tra lại kết nối và thử lại.');
+        setError('network_error');
       }
       setLoading(false);
     }
@@ -95,53 +107,67 @@ export default function SearchScreen({ navigation }) {
 
   return (
     <>
-      {error ? (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-        </View>
-      ) : (
-        <>
-          {/* Header với search bar */}
-          <View style={styles.header}>
-            {/* Nút back */}
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-              <AntDesign name="arrowleft" size={24} color="black" style={styles.icon} />
-            </TouchableOpacity>
+      {/* Header với search bar */}
+      <View style={styles.header}>
+        {/* Nút back */}
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <AntDesign name="arrowleft" size={24} color="black" style={styles.icon} />
+        </TouchableOpacity>
 
-            {/* Search bar */}
-            <View style={styles.searchContainer}>
-              <View style={styles.searchInputContainer}>
-                <TextInput
-                  placeholder="Tìm kiếm bài báo..."
-                  value={searchQuery}
-                  onChangeText={handleSearch}
-                  style={styles.searchInput}
-                />
-                {searchQuery.length > 0 && (
-                  <TouchableOpacity 
-                    onPress={() => handleSearch('')}
-                    style={styles.clearButton}
-                  >
-                    <AntDesign name="close" size={20} color="gray" />
-                  </TouchableOpacity>
-                )}
-              </View>
-            </View>
-          </View>
-
-          {/* Phần nội dung chính */}
-          <View style={{ padding: 10, flex: 1 }}>
-            {loading ? <ActivityIndicator size="large" /> : null}
-
-            <FlatList
-              data={articles}
-              keyExtractor={(item) => item._id}
-              onRefresh={handleRefresh}
-              refreshing={loading}
-              renderItem={articleItem}
+        {/* Search bar */}
+        <View style={styles.searchContainer}>
+          <View style={styles.searchInputContainer}>
+            <TextInput
+              placeholder="Tìm kiếm bài báo..."
+              value={inputText}
+              onChangeText={handleInputChange}
+              style={styles.searchInput}
             />
+            {inputText.length > 0 && (
+              <>
+                <TouchableOpacity 
+                  onPress={clearSearch}
+                  style={styles.clearButton}
+                >
+                  <AntDesign name="close" size={20} color="gray" />
+                </TouchableOpacity>
+                <View style={styles.separator} />
+                <TouchableOpacity 
+                  onPress={handleSearch}
+                  style={styles.searchButton}
+                >
+                  <AntDesign name="search1" size={20} color="gray" />
+                </TouchableOpacity>
+              </>
+            )}
           </View>
-        </>
+        </View>
+      </View>
+
+      {/* Phần nội dung chính */}
+      <View style={{ padding: 10, flex: 1 }}>
+        {loading ? (
+          <ActivityIndicator size="large" />
+        ) : searchQuery.length > 0 && articles.length === 0 ? (
+          <View style={styles.noResultsContainer}>
+            <Text style={styles.noResultsText}>Không có kết quả phù hợp</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={articles}
+            keyExtractor={(item) => item._id}
+            onRefresh={handleRefresh}
+            refreshing={loading}
+            renderItem={articleItem}
+          />
+        )}
+      </View>
+
+      {showError && (
+        <ErrorPopup 
+          onRetry={handleSearch}
+          onClose={() => setShowError(false)}
+        />
       )}
     </>
   );
@@ -229,5 +255,25 @@ const styles = StyleSheet.create({
     color: '#ff3b30',
     textAlign: 'center',
     marginBottom: 20,
-  }
+  },
+  separator: {
+    width: 1,
+    height: 20,
+    backgroundColor: '#e0e0e0',
+    marginHorizontal: 8,
+  },
+  searchButton: {
+    padding: 8,
+  },
+  noResultsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  noResultsText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+  },
 }); 

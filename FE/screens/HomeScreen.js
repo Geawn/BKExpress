@@ -9,6 +9,7 @@ import {formatTimeDifferenceWithCustomTZToGMT7} from '../helper/time.js'
 import BackendUrlModal from '../components/BackendUrlModal';
 import { getBackendUrl } from '../config/backend';
 import { useDevBackendUrl } from '../config/url';
+import ErrorPopup from '../components/ErrorPopup';
 
 const initialArticlesState = CATEGORIES.reduce((accumulator, category) => {
   accumulator[category[0]] = [];
@@ -21,13 +22,21 @@ function pubDateAndTimeDiff(pubDate) {
 }
 
 function getSourceIcon(source_icon) {
-  // Map source to icon file based on source_icon value
   const sourceIcons = {
     '0': require('../icon/tuoitre.jpg'),
     '1': require('../icon/vnexpress.jpg'),
   };
   
   return sourceIcons[source_icon] || sourceIcons['1']; // Default to vnexpress if unknown
+}
+
+function getDefaultImage(source_icon) {
+  const defaultImages = {
+    '0': require('../iconnothumb/vnexpressnothumb.jpg'),
+    '1': require('../iconnothumb/vnexpressnothumb.jpg'),
+  };
+  
+  return defaultImages[source_icon] || defaultImages['1']; // Default to vnexpress if unknown
 }
 
 export default function HomeScreen({ navigation }) {
@@ -40,6 +49,7 @@ export default function HomeScreen({ navigation }) {
   const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0][0]);
   const [showBackendModal, setShowBackendModal] = useState(false);
   const [error, setError] = useState(null);
+  const [showError, setShowError] = useState(false);
   const [backendUrl, setBackendUrl] = useState('');
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const isDevMode = useDevBackendUrl();
@@ -51,55 +61,45 @@ export default function HomeScreen({ navigation }) {
   const loadNews = async () => {
     setLoading(true);
     setHasMore(true);
+    
     try {
-      if (articles[selectedCategory].length === 0) {
-        const response = await getArticleListAPI(selectedCategory);
-        const updatedArticles = { ...articles };
-        updatedArticles[selectedCategory] = response.data;
-        setArticles(updatedArticles)
-        setFilteredArticles(updatedArticles[selectedCategory])
-        await addArticleToList(selectedCategory, response.data)
-        setError(null);
-      } else {
-        setFilteredArticles(articles[selectedCategory])
-      }
-    } catch (error) {
-      try {
-        const cache = await getArticlesList(selectedCategory)
+      // Kiểm tra cache trước
+      const cache = await getArticlesList(selectedCategory);
+      if (cache && cache.length > 0) {
         const updatedArticles = { ...articles };
         updatedArticles[selectedCategory] = cache;
-        setArticles(updatedArticles)
-        setFilteredArticles(updatedArticles[selectedCategory])
-        setError(null);
-      } catch (cacheError) {
-        setError('Lỗi mạng. Vui lòng kiểm tra lại kết nối và thử lại.');
-        console.error(error);
+        setArticles(updatedArticles);
+        setFilteredArticles(updatedArticles[selectedCategory]);
       }
+
+      // Gọi API để cập nhật
+      const response = await getArticleListAPI(selectedCategory);
+      const updatedArticles = { ...articles };
+      updatedArticles[selectedCategory] = response.data;
+      setArticles(updatedArticles);
+      setFilteredArticles(updatedArticles[selectedCategory]);
+      await addArticleToList(selectedCategory, response.data);
+      setShowError(false);
+    } catch (error) {
+      setShowError(true);
+      console.error('Error:', error);
     }
     setLoading(false);
   };
 
   const loadMoreArticles = async () => {
     if (loadingMore || !hasMore || isLoadingMore) {
-      console.log('Skip loadMoreArticles:', { loadingMore, hasMore, isLoadingMore });
       return;
     }
     
-    console.log('Starting loadMoreArticles for category:', selectedCategory);
     setLoadingMore(true);
     setIsLoadingMore(true);
+    
     try {
       const lastArticle = filteredArticles[filteredArticles.length - 1];
-      console.log('Last article pubDate:', lastArticle.pubDate);
-      
-      // Add delay of 1 second
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Log API call information
-      console.log('Making API call to:', `localhost:4000/articles?category=${selectedCategory}&limit=10&lastPubDate=${encodeURIComponent(lastArticle.pubDate)}&direction=older`);
-      
       const response = await getOlderArticlesAPI(selectedCategory, lastArticle.pubDate);
-      console.log('Received response with articles count:', response.data?.length || 0);
       
       if (response.data && response.data.length > 0) {
         const updatedArticles = { ...articles };
@@ -107,21 +107,17 @@ export default function HomeScreen({ navigation }) {
         setArticles(updatedArticles);
         setFilteredArticles(updatedArticles[selectedCategory]);
         await addArticleToList(selectedCategory, response.data);
-        console.log('Successfully added more articles. Total articles now:', updatedArticles[selectedCategory].length);
+        setShowError(false);
       } else {
-        console.log('No more articles to load');
         setHasMore(false);
       }
     } catch (error) {
+      // Show error popup only for API failure
+      setShowError(true);
       console.error('Error loading more articles:', error);
-      console.error('Error details:', {
-        category: selectedCategory,
-        lastArticleDate: filteredArticles[filteredArticles.length - 1]?.pubDate
-      });
     } finally {
       setLoadingMore(false);
       setIsLoadingMore(false);
-      console.log('Finished loadMoreArticles');
     }
   };
 
@@ -144,7 +140,7 @@ export default function HomeScreen({ navigation }) {
         }}
         style={styles.articleItem}>
         <Image 
-          source={item.image_url ? { uri: item.image_url } : null}
+          source={item.image_url ? { uri: item.image_url } : getDefaultImage(item.source_icon)}
           style={[styles.articleImage, !item.image_url && styles.noImage]}
         />
         <View style={styles.articleContent}>
@@ -184,101 +180,87 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <>
-      {error ? (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-          {isDevMode && (
-            <TouchableOpacity 
-              style={styles.retryButton}
-              onPress={() => setShowBackendModal(true)}
-            >
-              <Text style={styles.retryButtonText}>Cấu hình URL</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      ) : (
-        <>
-          {/* Header với menu, category, và các nút chức năng */}
-          <View style={styles.header}>
-            {/* Nút menu 3 gạch - luôn hiển thị */}
-            <TouchableOpacity onPress={() => setShowBackendModal(true)}>
-              <AntDesign name="bars" size={24} color="black" style={styles.icon} />
-            </TouchableOpacity>
+      {/* Header với menu, category, và các nút chức năng */}
+      <View style={styles.header}>
+        {/* Nút menu 3 gạch - luôn hiển thị */}
+        <TouchableOpacity onPress={() => setShowBackendModal(true)}>
+          <AntDesign name="bars" size={24} color="black" style={styles.icon} />
+        </TouchableOpacity>
 
-            {/* Thanh category */}
-            <View style={styles.categoryContainer}>
-              <FlatList
-                horizontal
-                data={CATEGORIES}
-                keyExtractor={(item) => item[0]}
-                showsHorizontalScrollIndicator={false}
-                renderItem={({ item }) => (
-                  <TouchableOpacity
-                    onPress={() => {
-                      console.log('Category changed to:', item[0]);
-                      setHasMore(true);
-                      setLoadingMore(false);
-                      setIsLoadingMore(false);
-                      setSelectedCategory(item[0]);
-                    }}
-                    style={[
-                      styles.categoryItem,
-                      selectedCategory === item[0] && styles.selectedCategoryItem
-                    ]}>
-                    <Text style={styles.categoryText}>{item[1]}</Text>
-                  </TouchableOpacity>
-                )}
-              />
-            </View>
-
-            {/* Các biểu tượng chức năng (tìm kiếm, thông báo) */}
-            <View style={styles.headerIcons}>
-              <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-                <AntDesign name="search1" size={24} color="black" style={styles.icon} />
+        {/* Thanh category */}
+        <View style={styles.categoryContainer}>
+          <FlatList
+            horizontal
+            data={CATEGORIES}
+            keyExtractor={(item) => item[0]}
+            showsHorizontalScrollIndicator={false}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => {
+                  console.log('Category changed to:', item[0]);
+                  setHasMore(true);
+                  setLoadingMore(false);
+                  setIsLoadingMore(false);
+                  setSelectedCategory(item[0]);
+                }}
+                style={[
+                  styles.categoryItem,
+                  selectedCategory === item[0] && styles.selectedCategoryItem
+                ]}>
+                <Text style={styles.categoryText}>{item[1]}</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => console.log('Notification pressed')}>
-                <AntDesign name="bells" size={24} color="black" style={styles.icon} />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Phần nội dung chính */}
-          <View style={{ padding: 10, flex: 1 }}>
-           {/*  <TextInput
-              placeholder="Tìm kiếm bài báo..."
-              value={searchQuery}
-              onChangeText={handleSearch}
-              style={{ borderWidth: 1, padding: 8, marginVertical: 10 }}
-            />  */}
-            
-            {loading ? <ActivityIndicator size="large" /> : null}
-
-            <FlatList
-              data={filteredArticles}
-              keyExtractor={(item) => item._id}
-              onRefresh={handleRefresh}
-              refreshing={loading}
-              renderItem={articleItem}
-              onEndReached={handleLoadMore}
-              onEndReachedThreshold={0.2}
-              ListFooterComponent={() => 
-                loadingMore ? (
-                  <View style={styles.loadingMoreContainer}>
-                    <ActivityIndicator size="small" />
-                  </View>
-                ) : null
-              }
-            />
-          </View>
-
-          <BackendUrlModal
-            visible={showBackendModal}
-            onClose={() => setShowBackendModal(false)}
-            onSave={handleBackendUrlSave}
-            isRequired={false}
-            initialUrl={backendUrl}
+            )}
           />
-        </>
+        </View>
+
+        {/* Các biểu tượng chức năng (tìm kiếm, thông báo) */}
+        <View style={styles.headerIcons}>
+          <TouchableOpacity onPress={() => navigation.navigate('Search')}>
+            <AntDesign name="search1" size={24} color="black" style={styles.icon} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => console.log('Notification pressed')}>
+            <AntDesign name="bells" size={24} color="black" style={styles.icon} />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Phần nội dung chính */}
+      <View style={{ padding: 10, flex: 1 }}>
+        {loading ? (
+          <ActivityIndicator size="large" />
+        ) : (
+          <FlatList
+            data={filteredArticles}
+            keyExtractor={(item) => item._id}
+            onRefresh={handleRefresh}
+            refreshing={loading}
+            renderItem={articleItem}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.2}
+            ListFooterComponent={() => 
+              loadingMore ? (
+                <View style={styles.loadingMoreContainer}>
+                  <ActivityIndicator size="small" />
+                </View>
+              ) : null
+            }
+          />
+        )}
+      </View>
+
+      <BackendUrlModal
+        visible={showBackendModal}
+        onClose={() => setShowBackendModal(false)}
+        onSave={handleBackendUrlSave}
+        isRequired={false}
+        initialUrl={backendUrl}
+      />
+
+      {showError && (
+        <ErrorPopup 
+          onRetry={loadNews}
+          onClose={() => setShowError(false)}
+        />
       )}
     </>
   );

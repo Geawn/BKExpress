@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { getArticleDetail as getArticleDetailCache, setArticleDetail as setArticleDetailCache } from '../cache/article.js'
 import { getArticleDetailAPI } from '../api/article.js'
 import {formatTimeDifferenceWithCustomTZToGMT7} from '../helper/time.js'
+import ErrorPopup from '../components/ErrorPopup';
 
 function pubDateAndTimeDiff(pubDate) {
   const [_, timediff] = formatTimeDifferenceWithCustomTZToGMT7(pubDate)
@@ -23,6 +24,8 @@ export default function DetailScreen({ route }) {
   const { _id, source_icon, category } = route.params;
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [showError, setShowError] = useState(false);
 
   useEffect(() => {
     loadArticle();
@@ -31,18 +34,39 @@ export default function DetailScreen({ route }) {
   const loadArticle = async () => {
     setLoading(true);
 
-    console.log('DetailScreen - source_icon from route.params:', source_icon);
-
-    const cache = await getArticleDetailCache(category, _id)
-    if (cache.content) {
-      console.log('DetailScreen - Using cached article, adding source_icon:', source_icon);
-      setArticle({...cache, source_icon: source_icon})
-    } else {
-      const response = await getArticleDetailAPI(_id)
-      console.log('DetailScreen - Got article from API, adding source_icon:', source_icon);
-      const articleWithSourceIcon = {...response.data, source_icon: source_icon}
-      setArticle(articleWithSourceIcon)
-      setArticleDetailCache(category, articleWithSourceIcon, _id)
+    // First try to get from cache
+    try {
+      const cache = await getArticleDetailCache(category, _id)
+      if (cache.content) {
+        // If we have cache, use it first
+        setArticle({...cache, source_icon: source_icon})
+      }
+      
+      // Always try to get fresh data from API
+      try {
+        const response = await getArticleDetailAPI(_id)
+        const articleWithSourceIcon = {...response.data, source_icon: source_icon}
+        setArticle(articleWithSourceIcon)
+        setArticleDetailCache(category, articleWithSourceIcon, _id)
+        setShowError(false);
+      } catch (apiError) {
+        // Show error popup for API failure
+        console.error('Error loading article from API:', apiError);
+        setShowError(true);
+      }
+    } catch (cacheError) {
+      // If cache fails, try API directly
+      try {
+        const response = await getArticleDetailAPI(_id)
+        const articleWithSourceIcon = {...response.data, source_icon: source_icon}
+        setArticle(articleWithSourceIcon)
+        setArticleDetailCache(category, articleWithSourceIcon, _id)
+        setShowError(false);
+      } catch (apiError) {
+        // Show error popup for API failure
+        console.error('Error loading article from API:', apiError);
+        setShowError(true);
+      }
     }
 
     setLoading(false);
@@ -135,118 +159,125 @@ export default function DetailScreen({ route }) {
               paddingBottom: 10
             }}>
              {/* <Text style={{ fontStyle: 'italic', color: '#666' }}>
-                Tác giả: {article.author || 'Không xác định'}
-              </Text>*/}
-              <Text style={{ fontStyle: 'italic', color: '#666' }}>
-                {pubDateAndTimeDiff(article.pubDate)}
-              </Text>
-            </View>
-
-            {/* Category and Tags */}
-            <View style={{ 
-              flexDirection: 'row', 
-              flexWrap: 'wrap', 
-              marginBottom: 20,
-              backgroundColor: '#f5f5f5',
-              padding: 10,
-              borderRadius: 5
-            }}>
-              <Text style={{ fontWeight: 'bold', marginRight: 10 }}>Chuyên mục:</Text>
-              <Text style={{ color: '#444' }}>{article.category?.name}</Text>
-              {article.keywords && (
-                <>
-                  <Text style={{ fontWeight: 'bold', marginRight: 10, marginLeft: 10 }}>Tags:</Text>
-                  <Text style={{ color: '#444' }}>{article.keywords.join(', ')}</Text>
-                </>
-              )}
-            </View>
-
-            {/* Description */}
-            {article.description && (
-              <Text style={{ 
-                fontSize: 18, 
-                fontWeight: '500',
-                marginBottom: 20, 
-                color: '#333',
-                lineHeight: 26,
-                borderLeftWidth: 3,
-                borderLeftColor: '#007AFF',
-                paddingLeft: 15,
-              }}>
-                {stripHtmlTags(article.description)}
-              </Text>
-            )}
-
-            {/* Main Image */}
-            {article.image_url && (
-              <View style={{ marginBottom: 20 }}>
-                <Image 
-                  source={{ uri: article.image_url }}
-                  style={{ 
-                    width: '100%', 
-                    height: 200, 
-                    resizeMode: 'cover',
-                    borderRadius: 8
-                  }}
-                />
+                  Tác giả: {article.author || 'Không xác định'}
+                </Text>*/}
+                <Text style={{ fontStyle: 'italic', color: '#666' }}>
+                  {pubDateAndTimeDiff(article.pubDate)}
+                </Text>
               </View>
-            )}
 
-            {/* Video */}
-            {article.video_url && (
-              <View style={{ marginBottom: 20 }}>
-                <Text style={{ fontWeight: 'bold', marginBottom: 10 }}>Video:</Text>
+              {/* Category and Tags */}
+              <View style={{ 
+                flexDirection: 'row', 
+                flexWrap: 'wrap', 
+                marginBottom: 20,
+                backgroundColor: '#f5f5f5',
+                padding: 10,
+                borderRadius: 5
+              }}>
+                <Text style={{ fontWeight: 'bold', marginRight: 10 }}>Chuyên mục:</Text>
+                <Text style={{ color: '#444' }}>{article.category?.name}</Text>
+                {article.keywords && (
+                  <>
+                    <Text style={{ fontWeight: 'bold', marginRight: 10, marginLeft: 10 }}>Tags:</Text>
+                    <Text style={{ color: '#444' }}>{article.keywords.join(', ')}</Text>
+                  </>
+                )}
+              </View>
+
+              {/* Description */}
+              {article.description && (
+                <Text style={{ 
+                  fontSize: 18, 
+                  fontWeight: '500',
+                  marginBottom: 20, 
+                  color: '#333',
+                  lineHeight: 26,
+                  borderLeftWidth: 3,
+                  borderLeftColor: '#007AFF',
+                  paddingLeft: 15,
+                }}>
+                  {stripHtmlTags(article.description)}
+                </Text>
+              )}
+
+              {/* Main Image */}
+              {article.image_url && (
+                <View style={{ marginBottom: 20 }}>
+                  <Image 
+                    source={{ uri: article.image_url }}
+                    style={{ 
+                      width: '100%', 
+                      height: 200, 
+                      resizeMode: 'cover',
+                      borderRadius: 8
+                    }}
+                  />
+                </View>
+              )}
+
+              {/* Video */}
+              {article.video_url && (
+                <View style={{ marginBottom: 20 }}>
+                  <Text style={{ fontWeight: 'bold', marginBottom: 10 }}>Video:</Text>
+                  <TouchableOpacity 
+                    onPress={() => Linking.openURL(article.video_url)}
+                    style={{ 
+                      backgroundColor: '#007AFF', 
+                      padding: 12,
+                      borderRadius: 8
+                    }}
+                  >
+                    <Text style={{ color: 'white', textAlign: 'center', fontWeight: '500' }}>
+                      Xem Video
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {/* Content */}
+              <View style={{ marginBottom: 30 }}>
+                {renderContent(article.content)}
+              </View>
+
+              {/* Source Link */}
+              <View style={{ 
+                borderTopWidth: 1, 
+                borderTopColor: '#eee',
+                paddingTop: 20,
+                marginTop: 10
+              }}>
                 <TouchableOpacity 
-                  onPress={() => Linking.openURL(article.video_url)}
+                  onPress={() => Linking.openURL(article.link)}
                   style={{ 
-                    backgroundColor: '#007AFF', 
-                    padding: 12,
-                    borderRadius: 8
+                    backgroundColor: '#f8f8f8',
+                    padding: 15,
+                    borderRadius: 8,
+                    borderWidth: 1,
+                    borderColor: '#ddd'
                   }}
                 >
-                  <Text style={{ color: 'white', textAlign: 'center', fontWeight: '500' }}>
-                    Xem Video
+                  <Text style={{ 
+                    color: '#007AFF', 
+                    textAlign: 'center',
+                    fontWeight: '500'
+                  }}>
+                    Đọc bài viết gốc tại {article.source_name} →
                   </Text>
                 </TouchableOpacity>
               </View>
-            )}
-
-            {/* Content */}
-            <View style={{ marginBottom: 30 }}>
-              {renderContent(article.content)}
-            </View>
-
-            {/* Source Link */}
-            <View style={{ 
-              borderTopWidth: 1, 
-              borderTopColor: '#eee',
-              paddingTop: 20,
-              marginTop: 10
-            }}>
-              <TouchableOpacity 
-                onPress={() => Linking.openURL(article.link)}
-                style={{ 
-                  backgroundColor: '#f8f8f8',
-                  padding: 15,
-                  borderRadius: 8,
-                  borderWidth: 1,
-                  borderColor: '#ddd'
-                }}
-              >
-                <Text style={{ 
-                  color: '#007AFF', 
-                  textAlign: 'center',
-                  fontWeight: '500'
-                }}>
-                  Đọc bài viết gốc tại {article.source_name} →
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </>
-        ) : (
-          <Text>Lỗi tải dữ liệu</Text>
-        )}
+            </>
+          ) : (
+            <Text>Lỗi tải dữ liệu</Text>
+          )}
       </ScrollView>
+
+      {showError && (
+        <ErrorPopup 
+          onRetry={loadArticle}
+          onClose={() => setShowError(false)}
+        />
+      )}
     </>
   );
 }
