@@ -34,6 +34,28 @@ We're excited to announce that more features are coming in our next updates!
   </a>
 </p>
 
+# Getting started
+### For server
+**This is just the guideline for local server only!!!**
+
+```bash
+git clone https://github.com/Geawn/BKExpress.git
+```
+Open 2 terminal
+
+First terminal is for:
+```bash
+cd crawler
+pip install -r requirement.txt
+py main.py
+```
+Second terminal is for:
+```bash
+npm i
+npm runstart
+```
+
+**If you use virtual device, you can try input the http://10.0.2.2:4000 in the url backend in App. Otherwise, deploy the server with a public IP to input the public URL into the url backend in App.**
 
 
 
