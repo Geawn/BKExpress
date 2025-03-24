@@ -37,7 +37,7 @@ We're excited to announce that more features are coming in our next updates!
 # Getting started
 ### For server
 **This is just the guideline for local server only!!!**
-
+**Use the "duc" branch!!!**
 ```bash
 git clone https://github.com/Geawn/BKExpress.git
 ```
