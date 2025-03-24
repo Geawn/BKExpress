@@ -12,3 +12,5 @@
 Update the latest news quickly!!
 
 Our app helps users stay informed with the newest headlines in real time. With a clean interface and seamless navigation, you can easily explore categories, read breaking news, and stay up-to-date anytime, anywhere.
+✨ **In our first release**, we provide paper viewing and search functionality.
+We're excited to announce that more features are coming in our next updates!
