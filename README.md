@@ -5,7 +5,7 @@ News mobile platform
 </p>
 
 
-<h1 align="center"News Mobile App</h1>
+<h1 align="center"News Mobile App"</h1>
 
 <p align="center">
   <img src="images/AboutApp.jpg" alt="Feature Graphic" width="80%">
