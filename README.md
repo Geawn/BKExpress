@@ -1,7 +1,7 @@
 # BKExpress
 News mobile platform
 <p align="center">
-  <img src="images/AppIcon.png" alt="App Icon" width="120">
+  <img src="images/AppIcon.jpg" alt="App Icon" width="120">
 </p>
 
 
