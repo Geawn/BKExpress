@@ -16,3 +16,8 @@ Our app helps users stay informed with the newest headlines in real time. With a
 
 ✨ **In our first release**, we provide paper viewing and search functionality.
 We're excited to announce that more features are coming in our next updates!
+### Viewing papers according to Category
+<p align="center">
+  <img src="images/Category.jpg" alt="Feature Graphic" width="80%">
+  <img src="images/DetailUp.jpg" alt="Feature Graphic" width="80%">
+</p>
