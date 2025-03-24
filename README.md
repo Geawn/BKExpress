@@ -7,3 +7,5 @@
 <p align="center">
   <img src="images/AboutApp.jpg" alt="Feature Graphic" width="80%">
 </p>
+
+## ✨ Features
