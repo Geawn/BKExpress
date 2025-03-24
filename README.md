@@ -55,7 +55,7 @@ npm i
 npm runstart
 ```
 
-**If you use virtual device, you can try input the http://10.0.2.2:4000 in the url backend in App. Otherwise, deploy the server with a public IP to input the public URL into the url backend in App.**
+If you use virtual device, you can try input the http://10.0.2.2:4000 in the url backend in App. Otherwise, deploy the server with a public IP to input the public URL into the url backend in App.
 
 
 
