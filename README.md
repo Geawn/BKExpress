@@ -9,3 +9,6 @@
 </p>
 
 ## ✨ Features
+Update the latest news quickly!!
+
+Our app helps users stay informed with the newest headlines in real time. With a clean interface and seamless navigation, you can easily explore categories, read breaking news, and stay up-to-date anytime, anywhere.
