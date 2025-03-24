@@ -18,6 +18,12 @@ Our app helps users stay informed with the newest headlines in real time. With a
 We're excited to announce that more features are coming in our next updates!
 ### Viewing papers according to Category
 <p align="center">
-  <img src="images/Category.jpg" alt="Feature Graphic" width="80%">
-  <img src="images/DetailUp.jpg" alt="Feature Graphic" width="80%">
+  <img src="images/Category.jpg" alt="Feature Graphic" width="30%">
+  <img src="images/DetailUp.jpg" alt="Feature Graphic" width="30%">
 </p>
+
+### Searching
+<p align="center">
+  <img src="images/Searching.jpg" alt="Feature Graphic" width="30%">
+</p>
+
