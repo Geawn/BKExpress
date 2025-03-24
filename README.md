@@ -27,3 +27,13 @@ We're excited to announce that more features are coming in our next updates!
   <img src="images/Searching.jpg" alt="Feature Graphic" width="30%">
 </p>
 
+# 📥 Download My App
+<p align="center">
+  <a href="https://drive.google.com/file/d/1_fgHQY7TM_mVVD8G-0O4AE5M-6tb_Kti/view?usp=sharing">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg" height="60" alt="Get it on Google Play">
+  </a>
+</p>
+
+
+
+
