@@ -42,5 +42,5 @@ ICON_MAPPING = {
 }
 
 # config.py
-API_ENDPOINT = "http://localhost:3000/articles"  # Điều chỉnh port nếu NestJS dùng port khác (thường là 3000)
+API_ENDPOINT = "http://localhost:4000/articles"  # Điều chỉnh port nếu NestJS dùng port khác (thường là 3000)
 REFRESH_INTERVAL = 15 * 60  # 15 phút (tính bằng giây)
