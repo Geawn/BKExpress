@@ -119,10 +119,6 @@ export default function HomeScreen({ navigation }) {
       setLoadingMore(false);
       setIsLoadingMore(false);
     }
-
-    // setSearchQuery('')
-
-    setLoading(false);
   };
 
   const handleLoadMore = () => {

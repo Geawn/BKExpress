@@ -245,6 +245,7 @@ export default function DetailScreen({ route }) {
                 borderTopWidth: 1, 
                 borderTopColor: '#eee',
                 paddingTop: 20,
+                paddingBottom: 20,
                 marginTop: 10
               }}>
                 <TouchableOpacity 

@@ -10,7 +10,8 @@ import { ConfigModule } from "@nestjs/config";
     UserModule,
     ConfigModule.forRoot(),
     MongooseModule.forRoot(
-      process.env.DATABASE_URL || "mongodb+srv://nhathuy2903:XKpqK9PlaV7BImPz@cluster0.vreiy66.mongodb.net/Newspaper_App",
+      process.env.DATABASE_URL ||
+        "mongodb+srv://nhathuy2903:XKpqK9PlaV7BImPz@cluster0.vreiy66.mongodb.net/Newspaper_App",
     ),
     ArticleModule,
     AuthModule,

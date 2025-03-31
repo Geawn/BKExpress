@@ -2,7 +2,7 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import * as bodyParser from "body-parser";
-import { Injectable } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
 
 @Injectable()
 class NewsService {
@@ -10,11 +10,11 @@ class NewsService {
     const sourceIcon = data.sourceIcon;
 
     if (sourceIcon === 0) {
-      console.log('Nhận từ nguồn báo: Tuổi Trẻ');
+      console.log("Nhận từ nguồn báo: Tuổi Trẻ");
     } else if (sourceIcon === 1) {
-      console.log('Nhận từ nguồn báo: VNExpress');
+      console.log("Nhận từ nguồn báo: VNExpress");
     } else {
-      console.log('Nguồn báo không xác định');
+      console.log("Nguồn báo không xác định");
     }
   }
 }

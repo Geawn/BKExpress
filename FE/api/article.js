@@ -17,6 +17,7 @@ export const getArticleListAPI = async (category) => {
     const baseUrl = await getBaseUrl();
     console.log('Making API call to:', `${baseUrl}/articles?category=${category}`);
     const response = await axiosInstance.get(`${baseUrl}/articles?category=${category}`);
+    console.log('API response:', response.data);
     return response;
   } catch (error) {
     console.error('API Error:', error);

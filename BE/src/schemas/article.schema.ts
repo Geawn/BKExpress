@@ -47,10 +47,12 @@ export class Article {
     type: [Object],
     required: false,
   })
-  @Prop([{ 
-    type: { type: String, enum: ["text", "image", "quote", "video", "list"] }, 
-    value: { type: MongooseSchema.Types.Mixed } 
-  }])
+  @Prop([
+    {
+      type: { type: String, enum: ["text", "image", "quote", "video", "list"] },
+      value: { type: MongooseSchema.Types.Mixed },
+    },
+  ])
   content?: { type: string; value: string | string[] }[];
 
   @ApiProperty({ description: "Publication date of the article" })
@@ -109,4 +111,3 @@ export class Article {
 }
 
 export const ArticleSchema = SchemaFactory.createForClass(Article);
-
