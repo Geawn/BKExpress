@@ -61,10 +61,19 @@ class TuoiTreCrawler(BaseCrawler):
                     image_url = img_tag.get("src", "")
                 description = soup_summary.get_text().strip()
 
-            # Chuẩn hóa pubDate sang ISO 8601 (UTC)
+            # Xử lý thời gian
             published_time = dateutil.parser.parse(article.published)
-            pub_date_utc = published_time.astimezone(pytz.UTC)
-            pub_date_iso = pub_date_utc.isoformat()  # Định dạng ISO 8601
+            
+            # Đảm bảo timezone được xử lý đúng
+            if published_time.tzinfo is None:
+                published_time = pytz.timezone('Asia/Ho_Chi_Minh').localize(published_time)
+            
+            # Chuyển đổi sang UTC
+            pub_date_utc = published_time - timedelta(hours=7)
+            pub_date_iso = pub_date_utc.isoformat()
+
+            print(f"Original published time: {article.published}")
+            print(f"Converted published time (UTC): {pub_date_iso}")
 
             content_div = soup.select_one(".detail-content")
             content = None
@@ -129,10 +138,24 @@ class VnExpressCrawler(BaseCrawler):
                     image_url = img_tag.get("src", "")
                 description = soup_summary.get_text().strip()
 
-            # Chuẩn hóa pubDate sang ISO 8601 (UTC)
+            # Xử lý thời gian
             published_time = dateutil.parser.parse(article.published)
-            pub_date_utc = published_time.astimezone(pytz.UTC)
-            pub_date_iso = pub_date_utc.isoformat()  # Định dạng ISO 8601
+            current_time = datetime.now(pytz.UTC)
+            
+            # Nếu thời gian trong tương lai, sử dụng thời gian hiện tại
+            if published_time > current_time:
+                published_time = current_time
+            
+            # Đảm bảo timezone được xử lý đúng
+            if published_time.tzinfo is None:
+                published_time = pytz.timezone('Asia/Ho_Chi_Minh').localize(published_time)
+            
+            # Chuyển đổi sang UTC
+            pub_date_utc = published_time - timedelta(hours=7)
+            pub_date_iso = pub_date_utc.isoformat()
+
+            print(f"Original published time: {article.published}")
+            print(f"Converted published time (UTC): {pub_date_iso}")
 
             content_div = soup.select_one(".fck_detail")
             content = None

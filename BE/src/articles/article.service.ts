@@ -72,48 +72,101 @@ export class ArticlesService {
   async createArticles(
     createArticleDtos: CreateArticleDto[],
   ): Promise<Article[]> {
-    const articles: Article[] = [];
+    const mutex = new Mutex();
+    const release = await mutex.acquire();
 
-    for (const dto of createArticleDtos) {
-      const category = await this.categoryModel.findOne({ name: dto.category });
-      if (!category) {
-        throw new BadRequestException(`Category '${dto.category}' not found`);
+    try {
+      // Lấy tất cả các link từ DTOs
+      const links = createArticleDtos.map((dto) => dto.link);
+
+      // Kiểm tra các bài viết đã tồn tại
+      const existingArticles = await this.articleModel.find({
+        link: { $in: links },
+      });
+      const existingLinks = new Set(
+        existingArticles.map((article) => article.link),
+      );
+
+      // Lọc ra các bài viết mới
+      const newArticles = createArticleDtos.filter(
+        (dto) => !existingLinks.has(dto.link),
+      );
+
+      if (newArticles.length === 0) {
+        return [];
       }
-      const articleData = { ...dto, category: category._id };
-      articles.push(new this.articleModel(articleData));
-    }
 
-    return this.articleModel.insertMany(articles);
+      // Lấy category cho các bài viết mới
+      const categoryMap = new Map();
+      for (const dto of newArticles) {
+        if (!categoryMap.has(dto.category)) {
+          const category = await this.categoryModel.findOne({
+            name: dto.category,
+          });
+          if (!category) {
+            throw new BadRequestException(`Category ${dto.category} not found`);
+          }
+          categoryMap.set(dto.category, category._id);
+        }
+        console.log(`Title: ${dto.title}`);
+        console.log(`Original pubDate: ${dto.pubDate}`);
+        console.log(
+          `Converted pubDate (GMT+7): ${new Date(dto.pubDate).toISOString()}`,
+        );
+      }
+
+      // Tạo các bài viết mới
+      const articlesToCreate = newArticles.map((dto) => {
+        const originalDate = new Date(dto.pubDate);
+        const adjustedDate = new Date(
+          originalDate.getTime() - 7 * 60 * 60 * 1000,
+        ); // Subtract 7 hours
+        return {
+          ...dto,
+          category: categoryMap.get(dto.category),
+          pubDate: adjustedDate.toISOString(),
+          language: dto.language || "vietnamese",
+        };
+      });
+
+      const createdArticles =
+        await this.articleModel.insertMany(articlesToCreate);
+      return createdArticles.map((article) => ({
+        ...article,
+        pubDate: new Date(article.pubDate),
+      })) as Article[];
+    } finally {
+      release();
+    }
   }
 
   async search(query: string) {
     return this.articleModel.aggregate([
       {
         $search: {
-          index: 'default',
+          index: "default",
           compound: {
             should: [
               {
                 text: {
                   query: query,
-                  path: 'title',
+                  path: "title",
                   fuzzy: { maxEdits: 2 },
-                  score: { boost: { value: 5 } }
-                }
+                  score: { boost: { value: 5 } },
+                },
               },
               {
                 text: {
                   query: query,
-                  path: 'content',
-                  score: { boost: { value: 2 } }
-                }
-              }
-            ]
-          }
-        }
+                  path: "content",
+                  score: { boost: { value: 2 } },
+                },
+              },
+            ],
+          },
+        },
       },
-      { $limit: 10 }
+      { $limit: 10 },
     ]);
   }
-  
 }

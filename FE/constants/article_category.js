@@ -1,7 +1,13 @@
 const CATEGORIES = [
-    ["Technology", 'Công nghệ'],
-    ["Politics", 'Chính trị'],
-    ["Health", 'Sức khỏe'],
+    ["General", 'Chung'],
+    ["News", 'Thời sự'],
+    ["World", 'Thế giới'],
+  //  ["Economy", 'Kinh doanh'],
+    ["Economy", 'Kinh tế'],
+   // ["Politics", 'Pháp luật'],
+//    ["Technology", 'Công nghệ'],
+    ["Politics", 'Chính trị']
+   /*} ["Health", 'Sức khỏe'],
     ["Travel", 'Du lịch'],
     ["Culture", 'Văn hóa'],
     ["General", 'Chung'],
@@ -15,7 +21,7 @@ const CATEGORIES = [
     ["Newday", 'Ngày mới'],
     ["World", 'Thế giới'],
     ["Youth", 'Tuổi trẻ'],
-    ["Education", 'Giáo dục']
+    ["Education", 'Giáo dục']*/
 ]
 
 export {CATEGORIES}
