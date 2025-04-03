@@ -1,10 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { CATEGORIES } from '../constants/article_category';
 import { BrandID } from '../constants/Brand';
 
+import { useSelector } from "react-redux";
+
 export default function CategoryScreen({ navigation }) {
+  const { categoryList } = useSelector((state) => state.user)
+
   const renderCategoryItem = (item) => (
     <TouchableOpacity style={styles.categoryItem} 
       key={item[0]} 
@@ -69,7 +72,7 @@ export default function CategoryScreen({ navigation }) {
         {/* Categories */}
         <Text style={styles.sectionTitle}>Chủ đề</Text>
         <View style={styles.categoryList}>
-          {CATEGORIES.map(renderCategoryItem)}
+          {categoryList.map((category) => category[2] && renderCategoryItem(category))}
           {renderAddCategoryItem()}
         </View>
 

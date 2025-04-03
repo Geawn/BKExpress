@@ -1,5 +1,7 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Button } from "react-native";
 import AntDesign from '@expo/vector-icons/AntDesign';
+
+import { deleteCategoryList } from '../cache/category'
 
 export default function AddCateScreen({ navigation }) {
   return (
@@ -12,7 +14,11 @@ export default function AddCateScreen({ navigation }) {
 
         {/* Title */}
         <Text style={styles.title}>Thêm / xóa chủ đề</Text>
-      </View></View>
+      </View>
+      <Button title="Xóa danh sách chủ đề" onPress={() => {
+        deleteCategoryList()
+      }} />
+    </View>
   )
 }
 

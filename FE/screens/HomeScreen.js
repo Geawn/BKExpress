@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, use } from 'react';
 import { View, Text, FlatList, TextInput, TouchableOpacity, ActivityIndicator, Image, StyleSheet } from 'react-native';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import axios from 'axios';
@@ -10,6 +10,9 @@ import BackendUrlModal from '../components/BackendUrlModal';
 import { getBackendUrl } from '../config/backend';
 import { useDevBackendUrl } from '../config/url';
 import ErrorPopup from '../components/ErrorPopup';
+
+import { useSelector, useDispatch } from "react-redux";
+import { setupStartApp } from '../store/userAction';
 
 const initialArticlesState = CATEGORIES.reduce((accumulator, category) => {
   accumulator[category[0]] = [];
@@ -40,13 +43,20 @@ function getDefaultImage(source_icon) {
 }
 
 export default function HomeScreen({ navigation, route }) {
+  const { categoryList } = useSelector((state) => state.user)
+  const dispatch = useDispatch();
+  useEffect(() => {
+    // Dispatch the setupStartApp action when the app starts
+    dispatch(setupStartApp());
+  }, []);
+
   const [articles, setArticles] = useState(initialArticlesState);
   const [filteredArticles, setFilteredArticles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0][0]);
+  const [selectedCategory, setSelectedCategory] = useState('');
   const categoryListRef = useRef(null); // Reference to the FlatList for the category bar
   const [showBackendModal, setShowBackendModal] = useState(false);
   const [error, setError] = useState(null);
@@ -71,7 +81,38 @@ export default function HomeScreen({ navigation, route }) {
   }, [route.params?.selectedCategory]);
 
   useEffect(() => {
-    loadNews();
+    if (categoryList.length) {
+      // update selectedCategory
+      let selectedCategoryAvailable = false;
+      for (const cate of categoryList) {
+        if (cate[0] === selectedCategory) {
+          selectedCategoryAvailable = cate[2];
+          break;
+        }
+      }
+      if (!selectedCategory || !selectedCategoryAvailable) {
+        // Tìm category đầu tiên có checked === true
+        let firstCheckedCategory = ''
+        for (const cate of categoryList) {
+          if (cate[2] === true) {
+            firstCheckedCategory = cate[0]
+            break
+          }
+        }
+
+        if (firstCheckedCategory) {
+          setSelectedCategory(firstCheckedCategory);
+        } else {
+          console.log('No category with checked === true found.');
+        }
+      }
+    } else {
+      console.log('categoryList is not available yet. Waiting for it to load.');
+    }
+  }, [categoryList]);
+
+  useEffect(() => {
+    if (selectedCategory) loadNews();
   }, [selectedCategory]);
 
   const loadNews = async () => {
@@ -208,10 +249,11 @@ export default function HomeScreen({ navigation, route }) {
           <FlatList
             ref={categoryListRef} // Attach the ref to the FlatList
             horizontal
-            data={CATEGORIES}
+            data={categoryList}
             keyExtractor={(item) => item[0]}
             showsHorizontalScrollIndicator={false}
             renderItem={({ item }) => (
+              (item[2] === true) && // Check if the category is checked
               <TouchableOpacity
                 onPress={() => {
                   console.log('Category changed to:', item[0]);

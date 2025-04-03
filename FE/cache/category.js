@@ -3,20 +3,12 @@ import { CATEGORIES } from '../constants/article_category'
 
 async function loadCategoryList() {
   try {
-    const categoryList =  AsyncStorage.getItem('categoryList')
+    const categoryList = await AsyncStorage.getItem('categoryList')
     if (categoryList) {
       return JSON.parse(categoryList); // Parse dữ liệu thành đối tượng
     } else {
-      const initialCategoryList = {};
-      CATEGORIES.forEach((category) => {
-        initialCategoryList[category[0]] = {
-          endName: category[0],
-          vieName: category[1],
-          checked: category[2]
-        };
-      });
-      await AsyncStorage.setItem('categoryList', JSON.stringify(initialCategoryList));
-      return initialCategoryList;
+      await AsyncStorage.setItem('categoryList', JSON.stringify(CATEGORIES));
+      return CATEGORIES;
     } 
   } catch (error) {
     console.error("Error loading category list:", error);
@@ -39,4 +31,4 @@ async function deleteCategoryList() {
   }
 }
 
-export { loadCategoryList, saveCategoryList };
+export { loadCategoryList, saveCategoryList, deleteCategoryList };
