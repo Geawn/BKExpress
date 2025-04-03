@@ -22,6 +22,18 @@ export default function CategoryScreen({ navigation }) {
     </TouchableOpacity>
   );
 
+  const renderAddCategoryItem = () => (
+    <TouchableOpacity style={styles.categoryItem} 
+      onPress={() =>  navigation.navigate('AddCate') }>
+      <Image
+        style={styles.categoryImage}
+      />
+      <View style={styles.overlay}>
+        <Text style={styles.categoryText}>Thêm / xóa chủ đề</Text>
+      </View>
+    </TouchableOpacity>
+  )
+
   const renderSourceItem = (brand) => (
     <TouchableOpacity style={styles.sourceItem} key={brand[0]}>
       {brand[0] === '1' ? (
@@ -43,11 +55,6 @@ export default function CategoryScreen({ navigation }) {
     <ScrollView contentContainerStyle={styles.scrollContent}>
       {/* Header */}
       <View style={styles.header}>
-        {/* Back button */}
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <AntDesign name="arrowleft" size={24} color="black" />
-        </TouchableOpacity>
-
         {/* Title */}
         <Text style={styles.title}>Chuyên mục</Text>
 
@@ -63,6 +70,7 @@ export default function CategoryScreen({ navigation }) {
         <Text style={styles.sectionTitle}>Chủ đề</Text>
         <View style={styles.categoryList}>
           {CATEGORIES.map(renderCategoryItem)}
+          {renderAddCategoryItem()}
         </View>
 
         {/* Sources */}
@@ -92,10 +100,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 10,
     backgroundColor: 'lightblue',
-  },
-  backButton: {
-    position: 'absolute',
-    left: 15,
   },
   iconRight: {
     position: 'absolute',
