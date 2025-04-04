@@ -1,15 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, use } from 'react';
 import { View, Text, FlatList, TextInput, TouchableOpacity, ActivityIndicator, Image, StyleSheet } from 'react-native';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import axios from 'axios';
 import { getArticleListAPI, getOlderArticlesAPI } from '../api/article.js';
 import { CATEGORIES } from '../constants/article_category.js';
 import { getArticlesList, addArticleToList, clearCache } from '../cache/article.js'
-import {formatTimeDifferenceWithCustomTZToGMT7} from '../helper/time.js'
+import { formatTimeDifferenceWithCustomTZToGMT7 } from '../helper/time.js'
 import BackendUrlModal from '../components/BackendUrlModal';
 import { getBackendUrl } from '../config/backend';
 import { useDevBackendUrl } from '../config/url';
 import ErrorPopup from '../components/ErrorPopup';
+
+import { useSelector, useDispatch } from "react-redux";
+import { setupStartApp } from '../store/userAction';
 
 const initialArticlesState = CATEGORIES.reduce((accumulator, category) => {
   accumulator[category[0]] = [];
@@ -26,7 +29,7 @@ function getSourceIcon(source_icon) {
     '0': require('../icon/tuoitre.jpg'),
     '1': require('../icon/vnexpress.jpg'),
   };
-  
+
   return sourceIcons[source_icon] || sourceIcons['1']; // Default to vnexpress if unknown
 }
 
@@ -35,18 +38,26 @@ function getDefaultImage(source_icon) {
     '0': require('../iconnothumb/vnexpressnothumb.jpg'),
     '1': require('../iconnothumb/vnexpressnothumb.jpg'),
   };
-  
+
   return defaultImages[source_icon] || defaultImages['1']; // Default to vnexpress if unknown
 }
 
-export default function HomeScreen({ navigation }) {
+export default function HomeScreen({ navigation, route }) {
+  const { categoryList } = useSelector((state) => state.user)
+  const dispatch = useDispatch();
+  useEffect(() => {
+    // Dispatch the setupStartApp action when the app starts
+    dispatch(setupStartApp());
+  }, []);
+
   const [articles, setArticles] = useState(initialArticlesState);
   const [filteredArticles, setFilteredArticles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0][0]);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const categoryListRef = useRef(null); // Reference to the FlatList for the category bar
   const [showBackendModal, setShowBackendModal] = useState(false);
   const [error, setError] = useState(null);
   const [showError, setShowError] = useState(false);
@@ -54,14 +65,60 @@ export default function HomeScreen({ navigation }) {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const isDevMode = useDevBackendUrl();
 
+  // update selectedCategory from CategoryScreen
   useEffect(() => {
-    loadNews();
+    if (route.params?.selectedCategory) {
+      setSelectedCategory(route.params.selectedCategory);
+
+      // Find the index of the selected category
+      const selectedIndex = CATEGORIES.findIndex((category) => category[0] === route.params.selectedCategory);
+
+      // Scroll to the selected category
+      if (selectedIndex !== -1 && categoryListRef.current) {
+        categoryListRef.current.scrollToIndex({ index: selectedIndex, animated: true });
+      }
+    }
+  }, [route.params?.selectedCategory]);
+
+  useEffect(() => {
+    if (categoryList.length) {
+      // update selectedCategory
+      let selectedCategoryAvailable = false;
+      for (const cate of categoryList) {
+        if (cate[0] === selectedCategory) {
+          selectedCategoryAvailable = cate[2];
+          break;
+        }
+      }
+      if (!selectedCategory || !selectedCategoryAvailable) {
+        // Tìm category đầu tiên có checked === true
+        let firstCheckedCategory = ''
+        for (const cate of categoryList) {
+          if (cate[2] === true) {
+            firstCheckedCategory = cate[0]
+            break
+          }
+        }
+
+        if (firstCheckedCategory) {
+          setSelectedCategory(firstCheckedCategory);
+        } else {
+          console.log('No category with checked === true found.');
+        }
+      }
+    } else {
+      console.log('categoryList is not available yet. Waiting for it to load.');
+    }
+  }, [categoryList]);
+
+  useEffect(() => {
+    if (selectedCategory) loadNews();
   }, [selectedCategory]);
 
   const loadNews = async () => {
     setLoading(true);
     setHasMore(true);
-    
+
     try {
       // Kiểm tra cache trước
       const cache = await getArticlesList(selectedCategory);
@@ -91,16 +148,16 @@ export default function HomeScreen({ navigation }) {
     if (loadingMore || !hasMore || isLoadingMore) {
       return;
     }
-    
+
     setLoadingMore(true);
     setIsLoadingMore(true);
-    
+
     try {
       const lastArticle = filteredArticles[filteredArticles.length - 1];
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       const response = await getOlderArticlesAPI(selectedCategory, lastArticle.pubDate);
-      
+
       if (response.data && response.data.length > 0) {
         const updatedArticles = { ...articles };
         updatedArticles[selectedCategory] = [...updatedArticles[selectedCategory], ...response.data];
@@ -139,15 +196,15 @@ export default function HomeScreen({ navigation }) {
           navigation.navigate('Detail', { _id: item._id, category: selectedCategory, source_icon: item.source_icon })
         }}
         style={styles.articleItem}>
-        <Image 
+        <Image
           source={item.image_url ? { uri: item.image_url } : getDefaultImage(item.source_icon)}
           style={[styles.articleImage, !item.image_url && styles.noImage]}
         />
         <View style={styles.articleContent}>
           <Text style={styles.articleTitle} numberOfLines={3}>{item.title}</Text>
           <View style={styles.articleFooter}>
-            <Image 
-              source={getSourceIcon(item.source_icon)} 
+            <Image
+              source={getSourceIcon(item.source_icon)}
               style={styles.sourceIcon}
               resizeMode="contain"
             />
@@ -183,18 +240,20 @@ export default function HomeScreen({ navigation }) {
       {/* Header với menu, category, và các nút chức năng */}
       <View style={styles.header}>
         {/* Nút menu 3 gạch - luôn hiển thị */}
-        <TouchableOpacity onPress={() => setShowBackendModal(true)}>
+        <TouchableOpacity onPress={() => navigation.push("Category")}>
           <AntDesign name="bars" size={24} color="black" style={styles.icon} />
         </TouchableOpacity>
 
         {/* Thanh category */}
         <View style={styles.categoryContainer}>
           <FlatList
+            ref={categoryListRef} // Attach the ref to the FlatList
             horizontal
-            data={CATEGORIES}
+            data={categoryList}
             keyExtractor={(item) => item[0]}
             showsHorizontalScrollIndicator={false}
             renderItem={({ item }) => (
+              (item[2] === true) && // Check if the category is checked
               <TouchableOpacity
                 onPress={() => {
                   console.log('Category changed to:', item[0]);
@@ -218,7 +277,10 @@ export default function HomeScreen({ navigation }) {
           <TouchableOpacity onPress={() => navigation.navigate('Search')}>
             <AntDesign name="search1" size={24} color="black" style={styles.icon} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => console.log('Notification pressed')}>
+          <TouchableOpacity onPress={
+            // () => console.log('Notification pressed')
+            () => { setShowBackendModal(true) }
+          }>
             <AntDesign name="bells" size={24} color="black" style={styles.icon} />
           </TouchableOpacity>
         </View>
@@ -237,7 +299,7 @@ export default function HomeScreen({ navigation }) {
             renderItem={articleItem}
             onEndReached={handleLoadMore}
             onEndReachedThreshold={0.2}
-            ListFooterComponent={() => 
+            ListFooterComponent={() =>
               loadingMore ? (
                 <View style={styles.loadingMoreContainer}>
                   <ActivityIndicator size="small" />
@@ -257,7 +319,7 @@ export default function HomeScreen({ navigation }) {
       />
 
       {showError && (
-        <ErrorPopup 
+        <ErrorPopup
           onRetry={loadNews}
           onClose={() => setShowError(false)}
         />
