@@ -15,11 +15,18 @@ async function loadCategoryList() {
   }
 }
 
-async function saveCategoryList(savedArticles) {
+async function updateCategoryList(engName) {
   try {
-    await AsyncStorage.setItem('savedArticles', JSON.stringify(savedArticles));
+    const categoryList = await loadCategoryList();
+    for (const cate of categoryList) {
+      if (cate[0] === engName) {
+        cate[2] = !cate[2]
+        break
+      }
+    }
+    await AsyncStorage.setItem('categoryList', JSON.stringify(categoryList));
   } catch (error) {
-    console.error("Error saving savedArticles:", error);
+    console.error("Error saving categoryList:", error);
   }
 }
 
@@ -31,4 +38,4 @@ async function deleteCategoryList() {
   }
 }
 
-export { loadCategoryList, saveCategoryList, deleteCategoryList };
+export { loadCategoryList, updateCategoryList, deleteCategoryList };
