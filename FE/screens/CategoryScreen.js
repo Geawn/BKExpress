@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Button } from 'react-native';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { BrandID } from '../constants/Brand';
 
@@ -9,11 +9,11 @@ export default function CategoryScreen({ navigation }) {
   const { categoryList } = useSelector((state) => state.user)
 
   const renderCategoryItem = (item) => (
-    <TouchableOpacity style={styles.categoryItem} 
-      key={item[0]} 
+    <TouchableOpacity style={styles.categoryItem}
+      key={item[0]}
       onPress={() => {
         // Set the selected category as a parameter in the previous screen
-        navigation.popTo('Home', { selectedCategory: item[0]});
+        navigation.popTo('Home', { selectedCategory: item[0] });
       }}>
       <Image
         source={{ uri: 'https://s3-alpha-sig.figma.com/img/f621/241e/a383579065047f36fb54c1376d50b90f?Expires=1744588800&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=hGyjA~zXKAZwJbinwqdGiFMchq7J19w5MPxiwx~K81yXPNpIZh52ujF6evlkM1aXIvq6Zz14GLUzW9IduG8OVHB2tQoc6hCTip6epWAEgCMlqFJo0j4KCwIlJO9jZBdV~WaHJzJoPpRGYTTV~VIxqV0phbF4aiinjCYGtsDr6DZTMt7tUOYccJ9prXL6Aw91DCi-A0cmkj0fIICu8RyFyRiWMFsE4BMULbtsFLG7ARQHjxa5QLm4BfoJfDtDCdz00kPaBpapyYiHeDlXbnBY9jDzOGTlXpmFgWXDdaLh4tn5lsgVrkYLr6vA1L75Nx3N5~Lm7W9XHB4VQPiJtzrTMA__' }} // Replace with actual image URL
@@ -26,8 +26,8 @@ export default function CategoryScreen({ navigation }) {
   );
 
   const renderAddCategoryItem = () => (
-    <TouchableOpacity style={styles.categoryItem} 
-      onPress={() =>  navigation.navigate('AddCate') }>
+    <TouchableOpacity style={styles.categoryItem}
+      onPress={() => navigation.navigate('AddCate')}>
       <Image
         style={styles.categoryImage}
       />
@@ -55,7 +55,7 @@ export default function CategoryScreen({ navigation }) {
   );
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContent}>
+    <>
       {/* Header */}
       <View style={styles.header}>
         {/* Title */}
@@ -67,29 +67,30 @@ export default function CategoryScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      {/* Main content */}
-      <View style={styles.content}>
-        {/* Categories */}
-        <Text style={styles.sectionTitle}>Chủ đề</Text>
-        <View style={styles.categoryList}>
-          {categoryList.map((category) => category[2] && renderCategoryItem(category))}
-          {renderAddCategoryItem()}
-        </View>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Main content */}
+        <View style={styles.content}>
+          {/* Categories */}
+          <Text style={styles.sectionTitle}>Chủ đề</Text>
+          <View style={styles.categoryList}>
+            {categoryList.map((category) => category[2] && renderCategoryItem(category))}
+            {renderAddCategoryItem()}
+          </View>
 
-        {/* Sources */}
-        <Text style={styles.sectionTitle}>Nguồn báo nổi bật</Text>
-        <View style={styles.sourceList}>
-          {BrandID.map((brand) => renderSourceItem(brand))}
-        </View>
+          {/* Sources */}
+          <Text style={styles.sectionTitle}>Nguồn báo nổi bật</Text>
+          <View style={styles.sourceList}>
+            {BrandID.map((brand) => renderSourceItem(brand))}
+          </View>
 
-        {/* Saved news */}
-        <TouchableOpacity style={styles.savedNewsButton}>
-          <AntDesign name="book" size={20} color="black" />
-          <Text style={styles.savedNewsText}>Tin tức đã lưu</Text>
-        </TouchableOpacity>
-      </View>
-        
-    </ScrollView>
+          {/* Saved news */}
+          <TouchableOpacity style={styles.savedNewsButton} onPress={() => navigation.navigate('SavedArticles')}>
+            <AntDesign name="book" size={20} color="black" />
+            <Text style={styles.savedNewsText}>Tin tức đã lưu</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </>
   );
 }
 
