@@ -5,7 +5,7 @@ import { loadUserInfo } from "../cache/userInfo";
 
 export const setupStartApp = createAsyncThunk(
   "setupStartApp",
-  async () => {
+  async (setLoading) => {
     try {
       // const response = await login()
       // response.data.accessToken
@@ -17,6 +17,8 @@ export const setupStartApp = createAsyncThunk(
       const accessToken = null;
       const userInfo = await loadUserInfo();
       const categoryList = await loadCategoryList();
+
+      setLoading(false);
 
       return {accessToken, userInfo, categoryList};
     } catch (error) {

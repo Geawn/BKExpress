@@ -9,7 +9,8 @@ import { formatTimeDifferenceWithCustomTZToGMT7 } from '../helper/time.js'
 import BackendUrlModal from '../components/BackendUrlModal';
 import { getBackendUrl } from '../config/backend';
 import { useDevBackendUrl } from '../config/url';
-import ErrorPopup from '../components/ErrorPopup';
+import ErrorPopup from '../components/ErrorPopup.js';
+import ArticleItem from '../components/ArticleItem.js';
 
 import { useSelector, useDispatch } from "react-redux";
 import { setupStartApp } from '../store/userAction';
@@ -19,36 +20,9 @@ const initialArticlesState = CATEGORIES.reduce((accumulator, category) => {
   return accumulator;
 }, {});
 
-function pubDateAndTimeDiff(pubDate) {
-  const [_, timediff] = formatTimeDifferenceWithCustomTZToGMT7(pubDate)
-  return timediff
-}
-
-function getSourceIcon(source_icon) {
-  const sourceIcons = {
-    '0': require('../icon/tuoitre.jpg'),
-    '1': require('../icon/vnexpress.jpg'),
-  };
-
-  return sourceIcons[source_icon] || sourceIcons['1']; // Default to vnexpress if unknown
-}
-
-function getDefaultImage(source_icon) {
-  const defaultImages = {
-    '0': require('../iconnothumb/vnexpressnothumb.jpg'),
-    '1': require('../iconnothumb/vnexpressnothumb.jpg'),
-  };
-
-  return defaultImages[source_icon] || defaultImages['1']; // Default to vnexpress if unknown
-}
-
 export default function HomeScreen({ navigation, route }) {
   const { categoryList } = useSelector((state) => state.user)
   const dispatch = useDispatch();
-  useEffect(() => {
-    // Dispatch the setupStartApp action when the app starts
-    dispatch(setupStartApp());
-  }, []);
 
   const [articles, setArticles] = useState(initialArticlesState);
   const [filteredArticles, setFilteredArticles] = useState([]);
@@ -64,6 +38,12 @@ export default function HomeScreen({ navigation, route }) {
   const [backendUrl, setBackendUrl] = useState('');
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const isDevMode = useDevBackendUrl();
+
+  useEffect(() => {
+    setLoading(true);
+    // Dispatch the setupStartApp action when the app starts
+    dispatch(setupStartApp(setLoading));
+  }, []);
 
   // update selectedCategory from CategoryScreen
   useEffect(() => {
@@ -187,34 +167,6 @@ export default function HomeScreen({ navigation, route }) {
     }
   };
 
-  const articleItem = ({ item }) => {
-    console.log('HomeScreen - Article source_icon:', item.source_icon);
-    return (
-      <TouchableOpacity
-        onPress={() => {
-          console.log('HomeScreen - Navigating to Detail with source_icon:', item.source_icon);
-          navigation.navigate('Detail', { _id: item._id, category: selectedCategory, source_icon: item.source_icon })
-        }}
-        style={styles.articleItem}>
-        <Image
-          source={item.image_url ? { uri: item.image_url } : getDefaultImage(item.source_icon)}
-          style={[styles.articleImage, !item.image_url && styles.noImage]}
-        />
-        <View style={styles.articleContent}>
-          <Text style={styles.articleTitle} numberOfLines={3}>{item.title}</Text>
-          <View style={styles.articleFooter}>
-            <Image
-              source={getSourceIcon(item.source_icon)}
-              style={styles.sourceIcon}
-              resizeMode="contain"
-            />
-            <Text style={styles.timeText}>{pubDateAndTimeDiff(item.pubDate)}</Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-    )
-  }
-
   const handleRefresh = async () => {
     setLoading(true);
     const updatedArticles = { ...articles };
@@ -296,7 +248,13 @@ export default function HomeScreen({ navigation, route }) {
             keyExtractor={(item) => item._id}
             onRefresh={handleRefresh}
             refreshing={loading}
-            renderItem={articleItem}
+            renderItem={({ item }) => (
+              <ArticleItem
+                item={item}
+                navigation={navigation} // Pass the navigation prop here
+                selectedCategory={selectedCategory} // Pass additional props if needed
+              />
+            )}
             onEndReached={handleLoadMore}
             onEndReachedThreshold={0.2}
             ListFooterComponent={() =>

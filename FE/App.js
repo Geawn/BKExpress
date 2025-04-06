@@ -8,6 +8,7 @@ import SearchScreen from './screens/SearchScreen';
 import SplashScreen from './components/SplashScreen';
 import CategoryScreen from './screens/CategoryScreen';
 import AddCateScreen from './screens/AddCateScreen';
+import SavedArticlesScreen from './screens/SavedArticlesScreen';
 
 import { store } from './store/store'
 import { Provider } from 'react-redux'
@@ -42,6 +43,7 @@ export default function App() {
             }}
           />
           <Stack.Screen name="AddCate" component={AddCateScreen} options={{ header: () => <NoHeader /> }} />
+          <Stack.Screen name="SavedArticles" component={SavedArticlesScreen} options={{ header: () => <NoHeader /> }} />
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>

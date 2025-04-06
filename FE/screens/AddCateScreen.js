@@ -1,4 +1,4 @@
-import { useState, useEffect, use } from "react";
+import { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, Button } from "react-native";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Feather from '@expo/vector-icons/Feather';
@@ -82,9 +82,9 @@ export default function AddCateScreen({ navigation }) {
         contentContainerStyle={styles.list}
       />
 
-      <Button title="Xóa danh sách chủ đề" onPress={() => {
+      {/* <Button title="Xóa danh sách chủ đề" onPress={() => {
         deleteCategoryList()
-      }} />
+      }} /> */}
     </View>
   )
 }
