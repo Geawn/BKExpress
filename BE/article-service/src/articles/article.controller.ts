@@ -17,7 +17,7 @@ import { ArticlesService } from "./article.service";
 import { Article } from "../schemas/article.schema";
 import { Types } from "mongoose";
 import { CreateArticleDto } from "./dto/create-article.dto";
-
+import { GetArticleDto } from "./dto/get-article.dto";
 @ApiTags("articles") // Grouping API endpoints in Swagger
 @Controller("articles")
 export class ArticlesController {
@@ -77,7 +77,7 @@ export class ArticlesController {
     @Query("limit") limit: number = 10,
     @Query("lastPubDate") lastPubDate?: string,
     @Query("direction") direction: "newer" | "older" = "older",
-  ): Promise<Article[]> {
+  ): Promise<GetArticleDto[]> {
     return this.articlesService.getArticles(
       category,
       limit,
@@ -122,29 +122,29 @@ export class ArticlesController {
     return article;
   }
 
-  @Post()
-  @ApiOperation({
-    summary: "Create new articles",
-    description: "Creates one or more articles in the database",
-  })
-  @ApiBody({
-    type: [CreateArticleDto], // Mảng DTO vì nhận nhiều article
-    description: "Array of articles to create",
-  })
-  @ApiResponse({
-    status: 201,
-    description: "The articles have been successfully created",
-    type: [Article], // Mảng Article làm response
-  })
-  @ApiResponse({
-    status: 400,
-    description: "Bad Request - Invalid data or category not found",
-  })
-  async createArticle(
-    @Body() createArticleDtos: CreateArticleDto[],
-  ): Promise<Article[]> {
-    return await this.articlesService.createArticles(createArticleDtos);
-  }
+  // @Post()
+  // @ApiOperation({
+  //   summary: "Create new articles",
+  //   description: "Creates one or more articles in the database",
+  // })
+  // @ApiBody({
+  //   type: [CreateArticleDto], // Mảng DTO vì nhận nhiều article
+  //   description: "Array of articles to create",
+  // })
+  // @ApiResponse({
+  //   status: 201,
+  //   description: "The articles have been successfully created",
+  //   type: [Article], // Mảng Article làm response
+  // })
+  // @ApiResponse({
+  //   status: 400,
+  //   description: "Bad Request - Invalid data or category not found",
+  // })
+  // async createArticle(
+  //   @Body() createArticleDtos: CreateArticleDto[],
+  // ): Promise<Article[]> {
+  //   return await this.articlesService.createArticles(createArticleDtos);
+  // }
 
   @Get("search")
   @ApiOperation({

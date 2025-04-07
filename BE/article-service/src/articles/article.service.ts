@@ -5,6 +5,7 @@ import { Article } from "../schemas/article.schema";
 import { Category } from "../schemas/category.schema";
 import { Types } from "mongoose";
 import { CreateArticleDto } from "./dto/create-article.dto";
+import { GetArticleDto } from "./dto/get-article.dto";
 interface ArticleQuery {
   category?: Types.ObjectId;
   pubDate?: { $lt?: Date; $gt?: Date };
@@ -32,7 +33,7 @@ export class ArticlesService {
     limit: number,
     lastPubDate?: string,
     direction: "newer" | "older" = "older",
-  ): Promise<Article[]> {
+  ): Promise<GetArticleDto[]> {
     const sortOrder = direction === "older" ? -1 : 1;
     const query: ArticleQuery = {};
 
@@ -53,12 +54,21 @@ export class ArticlesService {
         direction === "older" ? { $lt: dateCursor } : { $gt: dateCursor };
     }
 
-    return this.articleModel
+    const articles = await this.articleModel
       .find(query)
       .select("title description pubDate source_icon image_url _id")
       .sort({ pubDate: sortOrder })
       .limit(limit)
       .exec();
+
+    return articles.map((article) => ({
+      _id: article._id.toString(),
+      title: article.title,
+      description: article.description || "", // Ensure description is a string
+      pubDate: article.pubDate,
+      source_icon: article.source_icon,
+      image_url: article.image_url,
+    }));
   }
 
   async getArticleById(id: string): Promise<Article | null> {
