@@ -43,7 +43,7 @@ export class CreateArticleDto {
   content?: { type: string; value: string[] }[];
 
   @ApiProperty({ description: "Publication date of the article" })
-  pubDate: string;
+  pubDate: Date;
 
   @ApiProperty({ description: "Timezone of the publication date" })
   pubDateTZ: string;

@@ -9,64 +9,70 @@ function formatTimeDifferenceWithCustomTZToGMT7(pubDate) {
      * e.g., "hh:mm:ss-dd-mm-yyyy 17 seconds ago", "hh:mm:ss-dd-mm-yyyy 20 minutes ago".
      */
 
-    const pubDateObj = new Date(pubDate);
-    const now = new Date();
+    console.log('Input pubDate:', pubDate);
 
-    // // Parse pubDateTZ to get the offset in hours
-    // let pubDateOffsetHours = 0;
-    // if (pubDateTZ === "UTC" || pubDateTZ === "Z") {
-    //     pubDateOffsetHours = 0;
-    // } else {
-    //     const sign = pubDateTZ[0] === "+" ? 1 : -1;
-    //     const hours = parseInt(pubDateTZ.substring(1, 3));
-    //     const minutes = parseInt(pubDateTZ.substring(4, 6));
-    //     pubDateOffsetHours = sign * (hours + minutes / 60);
-    // }
-
-    // // Convert pubDate to GMT+7
-    // const pubDateGMT7 = new Date(pubDateObj.getTime() + (0 - pubDateOffsetHours) * 60 * 60 * 1000);
-
-    // Convert 'now' to GMT+7
-    const nowGMT7 = new Date(now.getTime() + 7 * 60 * 60 * 1000);
-
-    const timeDiff = nowGMT7 - pubDateObj;
-
-    const seconds = Math.floor(timeDiff / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-    const weeks = Math.floor(days / 7);
-    const months = Math.floor(days / 30);
-    const years = Math.floor(days / 365);
-
-    const pubDateStr = pubDateObj.toLocaleTimeString('en-GB', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-    }) + ' ' + pubDateObj.toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-    });
-
-    let timediff
-    if (seconds < 60) {
-        timediff = `${seconds} giây trước`;
-    } else if (minutes < 60) {
-        timediff = `${minutes} minutes ago`;
-    } else if (hours < 24) {
-        timediff = `${hours} hours ago`;
-    } else if (days < 7) {
-        timediff = `${days} ngày trước`;
-    } else if (weeks < 4) {
-        timediff = `${weeks} weeks ago`;
-    } else if (months < 12) {
-        timediff = `${months} months ago`;
-    } else {
-        timediff = `${years} years ago`;
+    if (!pubDate) {
+        return ['', 'Không xác định'];
     }
 
-    return [pubDateStr, timediff]
+    try {
+        // Remove GMT+7 from the string and parse
+        const dateStr = pubDate.replace(' GMT+7', '');
+        const pubDateObj = new Date(dateStr);
+        console.log('Parsed pubDate object:', pubDateObj);
+        
+        if (isNaN(pubDateObj.getTime())) {
+            console.log('Invalid date detected');
+            return ['', 'Không xác định'];
+        }
+
+        // Get current time
+        const now = new Date();
+        const nowGMT7 = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+        console.log('Current time (now) in GMT+7:', nowGMT7.toISOString().replace('Z', ''));
+        
+        const timeDiff = now - pubDateObj;
+        console.log('Time difference in ms:', timeDiff);
+        
+        // Nếu thời gian trong tương lai, hiển thị ngày tháng
+        if (timeDiff < 0) {
+            const result = pubDateObj.toLocaleDateString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+            return ['', result];
+        }
+
+        const seconds = Math.floor(timeDiff / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+
+        let timeString;
+        
+        if (hours >= 24) {
+            // Nếu quá 24h, hiển thị ngày tháng năm
+            timeString = pubDateObj.toLocaleDateString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        } else if (hours > 0) {
+            timeString = `${hours} giờ trước`;
+        } else if (minutes > 0) {
+            timeString = `${minutes} phút trước`;
+        } else if (seconds >= 0) {
+            timeString = `${seconds} giây trước`;
+        } else {
+            timeString = 'Vừa xong';
+        }
+
+        console.log('Final time string:', timeString);
+        return ['', timeString];
+    } catch (error) {
+        console.error('Error formatting time:', error);
+        return ['', 'Không xác định'];
+    }
 }
 
 export {formatTimeDifferenceWithCustomTZToGMT7}

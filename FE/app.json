@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "BKExpress-frontend",
-    "slug": "BKExpress-frontend",
+    "name": "BKExpress",
+    "slug": "BKExpressfrontend",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -17,12 +17,19 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.geawn.BKExpressfrontend"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "b94a748f-9605-468b-90e5-40292aeb38b2"
+      }
+    },
+    "owner": "geawn"
   }
 }
