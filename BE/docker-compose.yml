@@ -1,0 +1,64 @@
+version: '3.8'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - kafka-net
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    networks:
+      - kafka-net
+
+
+  crawler:
+    build: ./crawler-service
+    env_file:
+      - ./crawler-service/.env
+    depends_on:
+      - kafka
+    ports:
+      - "5000:5000"
+    networks:
+      - kafka-net
+
+  articles:
+    build: ./article-service
+    env_file:
+      - ./article-service/.env
+    depends_on:
+      - kafka
+    ports:
+      - "5001:5001"
+    networks:
+      - kafka-net
+  api:
+    build: ./api
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./api/.env
+    depends_on:
+      - articles
+    networks:
+      - kafka-net
+
+networks:
+  kafka-net:
+    driver: bridge
