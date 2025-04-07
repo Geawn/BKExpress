@@ -92,16 +92,6 @@ async function setArticleDetail(category, newArticleDetail, id) {
     });
 }
 
-async function setSavedArticles(category, _id, value) {
-  try {
-    const article = await getArticleDetail(category, _id);
-    article.saved = value; // Set saved = true/false
-    await setArticleDetail(category, article, _id); // Lưu lại thông tin bài viết đã cập nhật
-  } catch (error) {
-    console.error("Error saving saved articles:", error);
-  }
-}
-
 async function clearCache() {
   CATEGORIES.forEach(async (category) => {
     await AsyncStorage.setItem(`article_${category[0]}`, '')
@@ -109,4 +99,4 @@ async function clearCache() {
 
 }
 
-export { getArticlesList, addArticleToList, getArticleDetail, setArticleDetail, setSavedArticles, clearCache };
+export { getArticlesList, addArticleToList, getArticleDetail, setArticleDetail, clearCache };

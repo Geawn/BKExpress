@@ -9,10 +9,11 @@ import ErrorPopup from '../components/ErrorPopup';
 
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
-import { setSavedArticles, clearCache } from '../cache/article.js'
+import { clearCache } from '../cache/article.js'
 import { addSavedArticle, popSavedArticle, loadSavedArticles, checkSaved, deleteSavedArticles } from '../cache/savedArticles.js'
 
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { updateSavedArticlesRedux } from "../store/userReducer";
 
 function pubDateAndTimeDiff(pubDate) {
   const [_, timediff] = formatTimeDifferenceWithCustomTZToGMT7(pubDate)
@@ -28,7 +29,8 @@ export default function DetailScreen({ route }) {
   // for back navigation
   const navigation = useNavigation();
 
-  const { accessToken } = useSelector((state) => state.user)
+  const { accessToken, savedArticles } = useSelector((state) => state.user)
+  const dispatch = useDispatch();
 
   const { _id, source_icon, category } = route.params;
   const [article, setArticle] = useState(null);
@@ -42,19 +44,16 @@ export default function DetailScreen({ route }) {
     loadArticle();
   }, []);
 
+  useEffect(() => {
+    setSaved(savedArticles[_id] !== undefined)
+  }, [savedArticles, _id])
+
   const loadArticle = async () => {
     setLoading(true);
 
     // First try to get from cache
     try {
       const cache = await getArticleDetailCache(category, _id)
-      if (cache.hasOwnProperty('saved') == false) {
-        const isSaved = await checkSaved(category, _id)
-        await setSavedArticles(category, _id, isSaved); // Set saved = false if not in cache
-        setSaved(isSaved); // Update the saved state in the component
-      } else {
-        setSaved(cache.saved); // Update the saved state in the component
-      }
       if (cache.content) {
         // If we have cache, use it first
         setArticle({ ...cache, source_icon: source_icon })
@@ -119,14 +118,17 @@ export default function DetailScreen({ route }) {
     if (isSaving) return; // Prevent multiple clicks
 
     setIsSaving(true);
+    const time = new Date().toISOString();
     if (saved == true) {
       // use accessToken to delete saved article
 
-      await popSavedArticle(category, _id, setSaved);
+      await popSavedArticle(_id, setSaved);
+      dispatch(updateSavedArticlesRedux({ save: false, _id, category, time }))
     } else {
       // use accessToken to add saved article
 
       await addSavedArticle(category, _id, setSaved);
+      dispatch(updateSavedArticlesRedux({ save: true, _id, category, time }))
     }
     setIsSaving(false);
   }
@@ -316,7 +318,8 @@ export default function DetailScreen({ route }) {
             {/* <Button style={{paddingBottom: 0}} title='xóa saved articles' onPress={deleteSavedArticles}/>
             <Button style={{paddingBottom: 0}} title='get saved articles' onPress={async () => console.log(await loadSavedArticles())}/>
             <Button style={{paddingBottom: 0}} title='clear cache articles' onPress={clearCache}/>
-            <Button style={{paddingBottom: 0}} title='check saved articles' onPress={() => console.log(checkSaved())}/> */}
+            <Button style={{paddingBottom: 0}} title='check saved articles' onPress={async () => console.log(await checkSaved(_id))}/>
+            <Button style={{paddingBottom: 0}} title='check saved articles redux' onPress={async () => console.log(savedArticles)}/> */}
           </>
         ) : (
           <Text>Lỗi tải dữ liệu</Text>
