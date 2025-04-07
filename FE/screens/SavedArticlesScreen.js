@@ -6,20 +6,34 @@ import ArticleItem from "../components/ArticleItem";
 
 import { getArticleDetailAPI } from '../api/article.js'
 
-import { loadSavedArticles } from "../cache/savedArticles";
 import { getArticleDetail } from "../cache/article";
 
+import { useSelector } from "react-redux";
+
 export default function SavedArticlesScreen({ navigation }) {
-  const [savedArticles, setSavedArticles] = useState([]);
+  const [savedArticlesRender, setSavedArticlesRender] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const { savedArticles } = useSelector((state) => state.user)
 
   useEffect(() => {
     const loadArticles = async () => {
       setLoading(true);
       try {
-        const savedArticles = await loadSavedArticles();
+        const articlesArray = Object.keys(savedArticles).map(_id => ({
+          _id,
+          category: savedArticles[_id].category,
+          time: savedArticles[_id].time
+        }));
+        
+        // Sort by time (newest first)
+        articlesArray.sort((a, b) => {
+          return new Date(b.time) - new Date(a.time);
+        });
+
+        const savedArticlesSorted = articlesArray;
         let acc = []
-        for (const art of savedArticles) {
+        for (const art of savedArticlesSorted) {
           const article = await getArticleDetail(art.category, art._id);
           if (article.title) {
             // the article is in cache
@@ -36,7 +50,7 @@ export default function SavedArticlesScreen({ navigation }) {
             }
           }
         }
-        setSavedArticles(acc);
+        setSavedArticlesRender(acc);
         setLoading(false);
       } catch (error) {
         console.error("Error loading saved articles:", error);
@@ -44,7 +58,7 @@ export default function SavedArticlesScreen({ navigation }) {
       }
     }
     loadArticles();
-  }, []);
+  }, [savedArticles]);
 
   return (
     <>
@@ -64,7 +78,7 @@ export default function SavedArticlesScreen({ navigation }) {
           <ActivityIndicator size="large" />
         ) : (
           <FlatList
-            data={savedArticles}
+            data={savedArticlesRender}
             keyExtractor={(item) => item._id}
             renderItem={({ item }) => (
               <ArticleItem

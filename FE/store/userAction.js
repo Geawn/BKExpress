@@ -2,6 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 
 import { loadCategoryList } from "../cache/category";
 import { loadUserInfo } from "../cache/userInfo";
+import { loadSavedArticles } from "../cache/savedArticles";
 
 export const setupStartApp = createAsyncThunk(
   "setupStartApp",
@@ -17,10 +18,11 @@ export const setupStartApp = createAsyncThunk(
       const accessToken = null;
       const userInfo = await loadUserInfo();
       const categoryList = await loadCategoryList();
+      const savedArticles = await loadSavedArticles();
 
       setLoading(false);
 
-      return {accessToken, userInfo, categoryList};
+      return {accessToken, userInfo, categoryList, savedArticles};
     } catch (error) {
       console.error("Error setting up start app:", error);
     }

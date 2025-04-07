@@ -82,6 +82,9 @@ export default function HomeScreen({ navigation, route }) {
 
         if (firstCheckedCategory) {
           setSelectedCategory(firstCheckedCategory);
+
+          const selectedIndex = CATEGORIES.findIndex((category) => category[0] === firstCheckedCategory);
+          categoryListRef.current.scrollToIndex({ index: selectedIndex, animated: true })
         } else {
           console.log('No category with checked === true found.');
         }
