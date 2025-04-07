@@ -48,10 +48,10 @@ export class Article {
   @Prop([
     {
       type: { type: String, enum: ["text", "image", "quote", "video", "list"] },
-      value: String,
+      value: Object,
     },
   ])
-  content?: { type: string; value: string }[];
+  content?: { type: string; value: string | string[] }[];
 
   @ApiProperty({ description: "Publication date of the article" })
   @Prop()

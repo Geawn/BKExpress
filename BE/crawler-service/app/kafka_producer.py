@@ -13,11 +13,10 @@ producer = KafkaProducer(
     value_serializer=lambda v: json.dumps(v).encode('utf-8')
 )
 
-def send_article_to_kafka(articles):
+def send_article_to_kafka(article):
     try:
-        for article in articles:
-            producer.send(KAFKA_TOPIC, article)
+        producer.send(KAFKA_TOPIC, article)
         producer.flush()
-        logger.info(f"Sent {len(articles)} articles to Kafka topic {KAFKA_TOPIC}")
+        logger.info(f"Sent {len(article)} article to Kafka topic {KAFKA_TOPIC}")
     except Exception as e:
         logger.error(f"Error sending to Kafka: {str(e)}")

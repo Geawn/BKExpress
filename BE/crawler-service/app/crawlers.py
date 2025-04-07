@@ -34,7 +34,7 @@ class BaseCrawler(ABC):
 
     def crawl(self):
         articles = self.fetch_rss()
-        articles = articles[:5]  # Chỉ lấy 5 bài mới nhất
+        articles = articles[:3]  # Chỉ lấy 5 bài mới nhất
         new_articles = []
 
         for article in articles:

@@ -41,6 +41,9 @@ export class KafkaService implements OnModuleInit {
           let articleData: unknown;
           try {
             articleData = JSON.parse(message.value.toString());
+            this.logger.log(
+              `Raw article received: ${JSON.stringify(articleData)}`,
+            ); // Log dữ liệu thô
           } catch (err: unknown) {
             const errorMessage =
               err instanceof Error ? err.message : String(err);

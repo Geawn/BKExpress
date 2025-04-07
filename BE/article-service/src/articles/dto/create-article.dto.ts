@@ -40,7 +40,7 @@ export class CreateArticleDto {
   })
 
 
-  content?: { type: string; value: string }[];
+  content?: { type: string; value: string[] }[];
 
   @ApiProperty({ description: "Publication date of the article" })
   pubDate: string;
