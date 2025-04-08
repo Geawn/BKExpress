@@ -44,7 +44,7 @@ We're excited to announce that more features are coming in our next updates!
 - [x] Crawler: Crawler is used for collecting news data from online sources .
 - [x] Service-to-Service Communication : Kafka is used for asynchronous event streaming. 
 # Getting started
-### For server
+### For server (this is the old guideline, the new one is better with microservice architectrue and Docker applied)
 **This is just the guideline for local server only!!!**
 **Use the "duc" branch!!!**
 ```bash
