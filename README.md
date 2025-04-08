@@ -38,6 +38,11 @@ We're excited to announce that more features are coming in our next updates!
 <p align="center">
   <img src="images/BKexpresssystemdesign.jpg" alt="Feature Graphic" width="100%">
 </p>
+
+- [x] Main server: Responsible for handling business logic, APIs, and database interaction.
+- [x] Database: MongoDB Manages Data, structure data, Redis manages cache.
+- [x] Crawler: Crawler is used for collecting news data from online sources .
+- [x] Service-to-Service Communication : Kafka is used for asynchronous event streaming. 
 # Getting started
 ### For server
 **This is just the guideline for local server only!!!**
