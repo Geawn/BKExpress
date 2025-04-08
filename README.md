@@ -34,6 +34,10 @@ We're excited to announce that more features are coming in our next updates!
   </a>
 </p>
 
+#  System Design & Implementation:
+<p align="center">
+  <img src="images/Bkexpresssystemdesign.jpg" alt="Feature Graphic" width="30%">
+</p>
 # Getting started
 ### For server
 **This is just the guideline for local server only!!!**
