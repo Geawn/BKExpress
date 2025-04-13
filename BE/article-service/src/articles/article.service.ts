@@ -6,6 +6,7 @@ import { Category } from "../schemas/category.schema";
 import { Types } from "mongoose";
 import { CreateArticleDto } from "./dto/create-article.dto";
 import { GetArticleDto } from "./dto/get-article.dto";
+import { Mutex } from "async-mutex";
 interface ArticleQuery {
   category?: Types.ObjectId;
   pubDate?: { $lt?: Date; $gt?: Date };
