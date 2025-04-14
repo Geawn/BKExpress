@@ -182,7 +182,7 @@ export default function HomeScreen({ navigation, route }) {
 
   const handleBackendUrlSave = async (url) => {
     setBackendUrl(url);
-    await clearCache();
+    // await clearCache();
     const updatedArticles = { ...articles };
     updatedArticles[selectedCategory] = [];
     setArticles(updatedArticles);
