@@ -232,12 +232,9 @@ export default function HomeScreen({ navigation, route }) {
           <TouchableOpacity onPress={() => navigation.navigate('Search')}>
             <AntDesign name="search1" size={24} color="black" style={styles.icon} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={
-            // () => console.log('Notification pressed')
-            () => { setShowBackendModal(true) }
-          }>
-            <AntDesign name="bells" size={24} color="black" style={styles.icon} />
-          </TouchableOpacity>
+          <TouchableOpacity>
+    <AntDesign name="bells" size={24} color="black" style={styles.icon} />
+  </TouchableOpacity>
         </View>
       </View>
 
@@ -295,6 +292,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 10,
     backgroundColor: 'lightblue',
+   
   },
   categoryContainer: {
     flex: 1,

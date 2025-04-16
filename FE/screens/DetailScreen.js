@@ -18,7 +18,7 @@ import { updateSavedArticlesRedux } from "../store/userReducer";
 function pubDateAndTimeDiff(pubDate) {
   const [_, timediff] = formatTimeDifferenceWithCustomTZToGMT7(pubDate)
   return timediff
-} 
+}
 
 function stripHtmlTags(html) {
   if (!html) return '';
@@ -167,17 +167,27 @@ export default function DetailScreen({ route }) {
           }
           style={{ width: 200, height: 50, alignSelf: 'center', resizeMode: 'contain' }}
         />
-        
-        { article ? saved ?
-          <FontAwesome name="bookmark" size={24} color="black" style={{ padding: 10, position: 'absolute', right: 10, zIndex: 1 }} 
-            onPress={handleSave} 
-          /> :
-          <FontAwesome name="bookmark-o" size={24} color="black" 
-            style={{ padding: 10, position: 'absolute', right: 10, zIndex: 1 }} 
-            onPress={handleSave} 
-          /> : 
-          <ActivityIndicator size="large" />
-        }
+
+        {isSaving ? (
+          <ActivityIndicator size={30} color="#0000ff" style={{ padding: 15, position: 'absolute', right: 10, zIndex: 1 }} />
+        ) : (
+          article ? saved ?
+            <View style={{ alignItems: 'center', padding: 10, position: 'absolute', right: 10, zIndex: 1 }}>
+              <FontAwesome name="bookmark" size={24} color="black"
+                onPress={handleSave}
+              />
+              <Text>Đã lưu</Text>
+            </View>
+            :
+            <View style={{ alignItems: 'center', padding: 10, position: 'absolute', right: 10, zIndex: 1 }}>
+              <FontAwesome name="bookmark-o" size={24} color="black"
+                onPress={handleSave}
+              />
+              <Text>Lưu Bài</Text>
+            </View>
+            :
+            null
+        )}
       </View>
 
       <ScrollView style={{ flexGrow: 1, padding: 15 }}>

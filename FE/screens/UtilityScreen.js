@@ -1,95 +1,75 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import axios from 'axios';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 
 const UtilityScreen = () => {
-  const [weatherData, setWeatherData] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [lunarDate, setLunarDate] = useState('');
+  const [exchangeRates, setExchangeRates] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState('');
 
-  // Hàm chuyển đổi ngày dương sang âm lịch (giả lập)
-  const convertToLunarDate = (date) => {
-    const lunarMonths = [
-      'Giêng', 'Hai', 'Ba', 'Tư', 'Năm', 'Sáu', 
-      'Bảy', 'Tám', 'Chín', 'Mười', 'Một', 'Chạp'
-    ];
-    const lunarDays = [
-      'Mồng 1', 'Mồng 2', 'Mồng 3', 'Mồng 4', 'Mồng 5', 
-      'Mồng 6', 'Mồng 7', 'Mồng 8', 'Mồng 9', 'Mồng 10',
-      '11', '12', '13', '14', '15', '16', '17', '18', '19', '20',
-      '21', '22', '23', '24', '25', '26', '27', '28', '29', '30'
-    ];
-    
-    const day = date.getDate();
-    const month = date.getMonth();
-    const year = date.getFullYear();
-    
-    return `Ngày ${lunarDays[day % 30]} tháng ${lunarMonths[month]} (ÂL), năm ${year}`;
-  };
-
-  // Lấy dữ liệu thời tiết từ API
   useEffect(() => {
-    const fetchWeatherData = async () => {
-      try {
-        // Thay thế bằng API thời tiết thực tế như OpenWeatherMap
-        const response = await axios.get(
-          'https://api.openweathermap.org/data/2.5/weather?q=Hanoi&units=metric&appid=YOUR_API_KEY'
-        );
-        setWeatherData(response.data);
-      } catch (error) {
-        console.error('Error fetching weather data:', error);
-      }
-    };
-
-    fetchWeatherData();
-    setLunarDate(convertToLunarDate(selectedDate));
+    fetchExchangeRates();
   }, []);
 
-  return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.header}>Tiện ích</Text>
+  const fetchExchangeRates = async () => {
+    try {
+      setLoading(true);
+      const today = new Date().toISOString().split('T')[0];
+      const response = await fetch(`https://www.vietcombank.com.vn/api/exchangerates?date=${today}`);
+      const data = await response.json();
       
-      {/* Phần dự báo thời tiết */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>DỰ BÁO THỜI TIẾT</Text>
-        <View style={styles.weatherContainer}>
-          {weatherData ? (
-            <>
-              <Text style={styles.weatherTemp}>{Math.round(weatherData.main.temp)}°C</Text>
-              <Text style={styles.weatherDesc}>{weatherData.weather[0].description}</Text>
-              <View style={styles.weatherDetails}>
-                <Text>Độ ẩm: {weatherData.main.humidity}%</Text>
-                <Text>Gió: {weatherData.wind.speed} m/s</Text>
-              </View>
-            </>
-          ) : (
-            <Text>Đang tải dữ liệu thời tiết...</Text>
-          )}
-        </View>
-      </View>
+      if (data.Data) {
+        // Format the rates data and take only needed currencies
+        const formattedRates = data.Data
+          .filter(item => ['USD', 'EUR', 'GBP', 'JPY', 'HKD', 'AUD', 'NZD', 'CAD', 'SGD', 'THB', 'KRW'].includes(item.currencyCode))
+          .map(item => ({
+            currency: item.currencyCode,
+            rate: parseFloat(item.sell).toFixed(2)
+          }));
+        
+        setExchangeRates(formattedRates);
+        setLastUpdated(new Date(data.UpdatedDate).toLocaleDateString('vi-VN'));
+      }
+    } catch (error) {
+      console.error('Error fetching exchange rates:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getLocalDateString = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+  
+  return (
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 100 }}
+    bounces={true}
+    overScrollMode="always">
+      <Text style={styles.header}>Tiện ích</Text>
 
       {/* Phần lịch Việt */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>LỊCH VIỆT</Text>
         <View style={styles.calendarHeader}>
-          <Text style={styles.dayName}>THỨ TƯ</Text>
+          <Text style={styles.dayName}>{selectedDate.toLocaleDateString('vi-VN', { weekday: 'long' }).toUpperCase()}</Text>
           <Text style={styles.dateNumber}>{selectedDate.getDate()}</Text>
           <Text style={styles.monthYear}>
-            Th{selectedDate.getMonth() + 1} - {selectedDate.getFullYear()}
+            Tháng {selectedDate.getMonth() + 1} - {selectedDate.getFullYear()}
           </Text>
-          <Text style={styles.lunarDate}>{lunarDate}</Text>
         </View>
         
         <Calendar
           style={styles.calendar}
-          current={selectedDate.toISOString().split('T')[0]}
+          current={getLocalDateString(selectedDate)} // Hiển thị đúng ngày GMT+7
           markedDates={{
-            [selectedDate.toISOString().split('T')[0]]: { selected: true }
+            [getLocalDateString(selectedDate)]: { selected: true } // Đánh dấu đúng
           }}
           onDayPress={(day) => {
-            setSelectedDate(new Date(day.dateString));
-            setLunarDate(convertToLunarDate(new Date(day.dateString)));
+            setSelectedDate(new Date(day.dateString)); // Không cần chỉnh timezone vì day.dateString đã là YYYY-MM-DD
           }}
           theme={{
             calendarBackground: '#fff',
@@ -108,8 +88,38 @@ const UtilityScreen = () => {
             textDayFontSize: 14,
             textMonthFontSize: 16,
             textDayHeaderFontSize: 14
+            
           }}
         />
+      </View>
+
+      {/* Phần tỷ giá ngoại tệ */}
+      <View style={[styles.section, { marginBottom: 1 }]}>
+        <Text style={styles.sectionTitle}>THAM KHẢO TỶ GIÁ</Text>
+        <Text style={styles.updateDate}>Cập nhật ngày {lastUpdated}</Text>
+        
+        {loading ? (
+          <Text style={styles.loadingText}>Đang tải tỷ giá...</Text>
+        ) : (
+          <View style={styles.ratesContainer}>
+            <View style={styles.ratesHeader}>
+              <Text style={styles.ratesHeaderText}>Ngoại tệ</Text>
+              <Text style={styles.ratesHeaderText}>Tỷ giá bán</Text>
+            </View>
+            
+            {exchangeRates.map((item, index) => (
+              <View key={index} style={styles.rateRow}>
+                <Text style={styles.currencyText}>{item.currency}</Text>
+                <Text style={styles.rateText}>
+                  {parseFloat(item.rate).toLocaleString('vi-VN', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  })} VND
+                </Text>
+              </View>
+            ))} 
+          </View>
+        )}
       </View>
     </ScrollView>
   );
@@ -144,29 +154,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     color: '#ff6b6b',
   },
-  weatherContainer: {
-    alignItems: 'center',
-    paddingVertical: 10,
-  },
-  weatherTemp: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  weatherDesc: {
-    fontSize: 16,
-    marginBottom: 8,
-    textTransform: 'capitalize',
-  },
-  weatherDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginTop: 8,
-  },
   calendarHeader: {
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 1,
   },
   dayName: {
     fontSize: 16,
@@ -183,14 +173,48 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
   },
-  lunarDate: {
-    fontSize: 12,
-    color: '#888',
-    marginTop: 4,
-  },
   calendar: {
     borderRadius: 8,
     overflow: 'hidden',
+  },
+  updateDate: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 12,
+  },
+  loadingText: {
+    textAlign: 'center',
+    color: '#666',
+    paddingVertical: 16,
+  },
+  ratesContainer: {
+    marginTop: 8,
+  },
+  ratesHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    marginBottom: 8,
+  },
+  ratesHeaderText: {
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  rateRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f5f5f5',
+  },
+  currencyText: {
+    color: '#333',
+  },
+  rateText: {
+    color: '#333',
+    fontWeight: '500',
   },
 });
 
