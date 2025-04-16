@@ -25,7 +25,7 @@ export default function SavedArticlesScreen({ navigation }) {
           category: savedArticles[_id].category,
           time: savedArticles[_id].time
         }));
-        
+
         // Sort by time (newest first)
         articlesArray.sort((a, b) => {
           return new Date(b.time) - new Date(a.time);
@@ -74,20 +74,26 @@ export default function SavedArticlesScreen({ navigation }) {
 
       {/* Phần nội dung chính */}
       <View style={{ padding: 10, flex: 1 }}>
-        {loading ? (
-          <ActivityIndicator size="large" />
+        {savedArticles == null || savedArticlesRender.length == 0 ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={{ fontSize: 18 }}>Không có bài viết nào đã lưu</Text>
+          </View>
         ) : (
-          <FlatList
-            data={savedArticlesRender}
-            keyExtractor={(item) => item._id}
-            renderItem={({ item }) => (
-              <ArticleItem
-                item={item}
-                navigation={navigation} // Pass the navigation prop here
-                selectedCategory={item.category} // Pass additional props if needed
-              />
-            )}
-          />
+          loading ? (
+            <ActivityIndicator size="large" />
+          ) : (
+            <FlatList
+              data={savedArticlesRender}
+              keyExtractor={(item) => item._id}
+              renderItem={({ item }) => (
+                <ArticleItem
+                  item={item}
+                  navigation={navigation} // Pass the navigation prop here
+                  selectedCategory={item.category} // Pass additional props if needed
+                />
+              )}
+            />
+          )
         )}
       </View>
     </>
