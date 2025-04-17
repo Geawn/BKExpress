@@ -39,32 +39,32 @@ We're excited to announce that more features are coming in our next updates!
   <img src="images/BKexpresssystemdesign.jpg" alt="Feature Graphic" width="100%">
 </p>
 
+### We applied Microservices architecture and deployed with Docker.
+
 - [x] Main server: Responsible for handling business logic, APIs, and database interaction.
 - [x] Database: MongoDB Manages Data, structure data, Redis manages cache.
 - [x] Crawler: Crawler is used for collecting news data from online sources .
 - [x] Service-to-Service Communication : Kafka is used for asynchronous event streaming. 
 # Getting started
-### For server (this is the old guideline, the new one is better with microservice architectrue and Docker applied)
+### For server 
 **This is just the guideline for local server only!!!**
-**Use the "duc" branch!!!**
+
 ```bash
 git clone https://github.com/Geawn/BKExpress.git
 ```
-Open 2 terminal
-
-First terminal is for:
+For first time
 ```bash
-cd crawler
-pip install -r requirement.txt
-py main.py
+cd BE
+docker-compose up --build
 ```
-Second terminal is for:
+For later run
 ```bash
-npm i
-npm runstart
+cd BE
+docker-compose up 
 ```
 
-If you use virtual device, you can try input the http://10.0.2.2:4000 in the url backend in App. Otherwise, deploy the server with a public IP to input the public URL into the url backend in App.
+fill for backend url in app with the url that backend provide.
+
 
 
 
