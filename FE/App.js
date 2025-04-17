@@ -14,8 +14,8 @@ import UtilityScreen from './screens/UtilityScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import { AntDesign } from '@expo/vector-icons';
 
-import { store } from './store/store'
-import { Provider } from 'react-redux'
+import { store } from './store/store';
+import { Provider } from 'react-redux';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -46,7 +46,7 @@ function TabNavigator() {
           shadowOpacity: 0.25,
           shadowRadius: 3.84,
         },
-        header: () => <NoHeader />,
+        headerShown: false, // Hide the header for the tab navigator
       }}>
       <Tab.Screen
         name="HomeTab"
@@ -82,34 +82,26 @@ function TabNavigator() {
   );
 }
 
-// for no header in home screen
-const NoHeader = () => {
-  return (
-    <SafeAreaView style={{ paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0 }}>
-    </SafeAreaView>
-  );
-};
-
 export default function App() {
   return (
     <Provider store={store}>
-      <NavigationContainer style={{ backgroundColor: 'blue' }}>
+      <NavigationContainer>
         <Stack.Navigator initialRouteName="Splash">
-          <Stack.Screen name="Splash" component={SplashScreen} options={{ header: () => <NoHeader /> }} />
-          <Stack.Screen name="MainApp" component={TabNavigator} options={{ header: () => <NoHeader /> }} />
-          <Stack.Screen name="Detail" component={DetailScreen} options={{ header: () => <NoHeader /> }} />
-          <Stack.Screen name="Search" component={SearchScreen} options={{ header: () => <NoHeader /> }} />
+          <Stack.Screen name="Splash" component={SplashScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="MainApp" component={TabNavigator} options={{ headerShown: false }} />
+          <Stack.Screen name="Detail" component={DetailScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="Search" component={SearchScreen} options={{ headerShown: false }} />
           <Stack.Screen
             name="Category"
             component={CategoryScreen}
             options={{
-              header: () => <NoHeader />,
+              headerShown: false,
               gestureDirection: 'horizontal-inverted',
               cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
             }}
           />
-          <Stack.Screen name="AddCate" component={AddCateScreen} options={{ header: () => <NoHeader /> }} />
-          <Stack.Screen name="SavedArticles" component={SavedArticlesScreen} options={{ header: () => <NoHeader /> }} />
+          <Stack.Screen name="AddCate" component={AddCateScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="SavedArticles" component={SavedArticlesScreen} options={{ headerShown: false }} />
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>
